@@ -1,0 +1,59 @@
+/**
+ * build.js  —  bundles the multi-file project back into a single HTML file.
+ *
+ * Usage:
+ *   node build.js
+ *
+ * Output:
+ *   dist/Folio.html   ← ready to share or open as a standalone file
+ *
+ * No npm packages required — uses only Node.js built-ins.
+ */
+
+const fs   = require('fs');
+const path = require('path');
+
+const ROOT = __dirname;
+const DIST = path.join(ROOT, 'dist');
+
+/* ── helpers ─────────────────────────────────────────── */
+function read(rel) {
+  return fs.readFileSync(path.join(ROOT, rel), 'utf8');
+}
+
+/* ── 1. read index.html ──────────────────────────────── */
+let html = read('index.html');
+
+/* ── 2. inline <link rel="stylesheet" href="…"> ────── */
+html = html.replace(
+  /<link\s+rel="stylesheet"\s+href="([^"]+)"[^>]*>/g,
+  (_, href) => {
+    const css = read(href);
+    return `<style>\n${css}</style>`;
+  }
+);
+
+/* ── 3. inline <script src="…"></script> ────────────── */
+html = html.replace(
+  /<script\s+src="([^"]+)"><\/script>/g,
+  (_, src) => {
+    // only inline local files — leave CDN scripts alone
+    if (src.startsWith('http://') || src.startsWith('https://')) {
+      return `<script src="${src}"></script>`;
+    }
+    const js = read(src);
+    return `<script>\n${js}</script>`;
+  }
+);
+
+/* ── 4. collapse multiple consecutive blank lines ────── */
+html = html.replace(/\n{3,}/g, '\n\n');
+
+/* ── 5. write output ─────────────────────────────────── */
+fs.mkdirSync(DIST, { recursive: true });
+const out = path.join(DIST, 'Folio.html');
+fs.writeFileSync(out, html, 'utf8');
+
+const kb = Math.round(fs.statSync(out).size / 1024);
+console.log(`✓ dist/Folio.html  (${kb} KB)`);
+console.log('  Open it directly in Chrome/Edge — no server needed.');
