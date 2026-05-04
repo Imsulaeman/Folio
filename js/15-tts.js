@@ -37,13 +37,17 @@ function speakSelection() {
   document.getElementById('sel-popup').style.display = 'none';
 }
 genWave();
-restoreSession();
+// Init file sync before restoring session (loads newer data from file if available)
+initFileSync().then(() => {
+  restoreSession();
+  renderDashboard();
+  updateDueBadge();
+}).catch(() => {
+  restoreSession();
+  renderDashboard();
+  updateDueBadge();
+});
 initTTS();
-
-// Render dashboard on load (it's the landing page)
-renderDashboard();
-// Update due badge on load
-updateDueBadge();
 // Request notification permission politely after 3 seconds
 setTimeout(() => requestNotificationPermission(), 3000);
 // Send daily notification if cards are due
