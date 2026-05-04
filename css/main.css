@@ -748,11 +748,13 @@ body.notes-tab-active .notes-panel { display: none; }
 }
 .type-input:focus { border-color: var(--accent); }
 .type-input.correct { border-color: #27a85f; background: rgba(39,168,95,.08); }
+.type-input.close   { border-color: #c9a227; background: rgba(201,162,39,.08); }
 .type-input.wrong   { border-color: var(--accent); background: rgba(192,57,43,.08); }
 .type-feedback {
   font-size: 13px; text-align: center; min-height: 20px;
 }
 .type-feedback.correct { color: #27a85f; }
+.type-feedback.close   { color: #c9a227; }
 .type-feedback.wrong   { color: var(--accent); }
 .type-submit {
   background: var(--accent); border: none; color: #fff;

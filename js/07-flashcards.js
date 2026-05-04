@@ -1,10 +1,11 @@
 /* ═══════════════════════════════════
-   FLASHCARDS — SM-2 Spaced Repetition
-   Each card: { jp, rd, mn, interval, easiness, dueDate, reps, lapses }
-   interval  = days until next review
-   easiness  = multiplier (2.5 default, min 1.3)
-   dueDate   = ms timestamp when next due
-   reps      = consecutive successful reviews
+   FLASHCARDS — FSRS-5 Spaced Repetition
+   Each card: { jp, rd, mn, stability, difficulty, dueDate, reps, lapses,
+                state, lastReview, scheduledDays }
+   stability  = memory strength in days (higher = longer retention)
+   difficulty = card difficulty 1–10 (lower = easier)
+   state      = 0:New, 1:Learning, 2:Review, 3:Relearning
+   dueDate    = ms timestamp when next due
 ═══════════════════════════════════ */
 
 const TODAY_MS = () => {
@@ -12,42 +13,165 @@ const TODAY_MS = () => {
 };
 const DAY_MS = 86400000;
 
+/* ── FSRS-5 default parameters ── */
+const FSRS_W = [
+  0.4072,  // w0  initial stability: Again
+  1.1829,  // w1  initial stability: Hard
+  3.1262,  // w2  initial stability: Good
+  15.4722, // w3  initial stability: Easy
+  7.2102,  // w4  initial difficulty intercept
+  0.5316,  // w5  initial difficulty slope
+  1.0651,  // w6  difficulty update slope
+  0.0589,  // w7  difficulty mean-reversion weight
+  1.5747,  // w8  recall stability increase base
+  0.1070,  // w9  recall stability S exponent
+  1.0013,  // w10 recall stability R exponent
+  0.5379,  // w11 lapse stability multiplier
+  0.0190,  // w12 lapse stability D exponent
+  0.3246,  // w13 lapse stability S exponent
+  0.5,     // w14 lapse stability R factor
+  0.2616,  // w15 hard penalty
+  2.9466,  // w16 easy bonus
+  0.2434,  // w17 short-term stability modifier (unused in simple impl)
+  0.6997,  // w18 short-term stability modifier (unused in simple impl)
+];
+
+const FSRS_DECAY  = -0.5;
+const FSRS_FACTOR = 19 / 81;  // ≈ 0.2346
+const DESIRED_RETENTION = 0.9;
+const MAX_INTERVAL = 36500;   // 100 years cap
+
+/* ── FSRS math ── */
+function fsrsRetrievability(elapsedDays, stability) {
+  if (stability <= 0) return 0;
+  return Math.pow(1 + FSRS_FACTOR * elapsedDays / stability, FSRS_DECAY);
+}
+
+function fsrsNextInterval(stability) {
+  const i = (stability / FSRS_FACTOR) *
+            (Math.pow(DESIRED_RETENTION, 1 / FSRS_DECAY) - 1);
+  return Math.min(Math.max(Math.round(i), 1), MAX_INTERVAL);
+}
+
+function fsrsInitDifficulty(rating) {
+  // rating: 1=Again, 2=Hard, 3=Good, 4=Easy
+  return clamp(FSRS_W[4] - Math.exp(FSRS_W[5] * (rating - 1)) + 1, 1, 10);
+}
+
+function fsrsInitStability(rating) {
+  return Math.max(FSRS_W[rating - 1], 0.1);
+}
+
+function fsrsNextDifficulty(D, rating) {
+  const D0g = FSRS_W[4] - Math.exp(FSRS_W[5] * (3 - 1)) + 1; // D0(Good)
+  const next = FSRS_W[7] * D0g + (1 - FSRS_W[7]) * (D - FSRS_W[6] * (rating - 3));
+  return clamp(next, 1, 10);
+}
+
+function fsrsNextRecallStability(D, S, R, rating) {
+  const hardPenalty = rating === 2 ? FSRS_W[15] : 1;
+  const easyBonus  = rating === 4 ? FSRS_W[16] : 1;
+  return S * (1 + Math.exp(FSRS_W[8]) *
+    (11 - D) *
+    Math.pow(S, -FSRS_W[9]) *
+    (Math.exp(FSRS_W[10] * (1 - R)) - 1) *
+    hardPenalty * easyBonus);
+}
+
+function fsrsNextForgetStability(D, S, R) {
+  const next = FSRS_W[11] *
+    Math.pow(D, -FSRS_W[12]) *
+    (Math.pow(S + 1, FSRS_W[13]) - 1) *
+    Math.exp(FSRS_W[14] * (1 - R));
+  return Math.max(Math.min(next, S), 0.01);
+}
+
+function clamp(val, lo, hi) { return Math.min(Math.max(val, lo), hi); }
+
+/* ── Card init + SM-2 migration ── */
 function srsInit(card) {
-  if (!card.dueDate)      card.dueDate      = TODAY_MS();
-  if (!card.interval)     card.interval     = 0;
-  if (!card.easiness)     card.easiness     = 2.5;
-  if (!card.reps)         card.reps         = 0;
-  if (!card.lapses)       card.lapses       = 0;
+  // Migrate old SM-2 cards → FSRS
+  if (card.easiness !== undefined && card.stability === undefined) {
+    // Convert easiness (1.3–2.5+) → difficulty (1–10)
+    card.difficulty = clamp(11 - card.easiness * 3.5, 1, 10);
+    // interval → stability (rough: stability ≈ interval)
+    card.stability  = Math.max(card.interval || 0.4, 0.1);
+    card.state      = card.reps > 0 ? 2 : 0;
+    card.lastReview = card.dueDate
+      ? card.dueDate - (card.interval || 0) * DAY_MS
+      : Date.now();
+    card.scheduledDays = card.interval || 0;
+    // Clean up old fields
+    delete card.easiness;
+    delete card.interval;
+  }
+  // Ensure FSRS fields
+  if (card.stability  === undefined) card.stability  = 0;
+  if (card.difficulty === undefined) card.difficulty = 0;
+  if (card.state      === undefined) card.state      = 0;
+  if (!card.dueDate)                 card.dueDate    = TODAY_MS();
+  if (!card.reps)                    card.reps       = 0;
+  if (!card.lapses)                  card.lapses     = 0;
+  if (!card.lastReview)              card.lastReview = 0;
+  if (!card.scheduledDays)           card.scheduledDays = 0;
   if (card.correctCount === undefined) card.correctCount = 0;
   return card;
 }
 
-// SM-2 algorithm
-function sm2(card, rating) {
-  // rating: 0=again, 1=hard, 2=good, 3=easy
+/* ── FSRS scheduling ── */
+function fsrs(card, rating) {
+  // rating: 0=again, 1=hard, 2=good, 3=easy  (internal)
+  // FSRS uses 1=Again, 2=Hard, 3=Good, 4=Easy
+  const R = rating + 1;
   card = srsInit(card);
 
-  if (rating === 0) {
-    // Again — reset
-    card.reps     = 0;
-    card.lapses   += 1;
-    card.interval = 1;
-    card.easiness = Math.max(1.3, card.easiness - 0.2);
-    card.dueDate  = TODAY_MS() + DAY_MS;
-  } else {
-    // Passed — advance
-    if (card.reps === 0)      card.interval = 1;
-    else if (card.reps === 1) card.interval = 6;
-    else {
-      const bonus = rating === 3 ? 1.3 : rating === 1 ? 1.2 : 1;
-      card.interval = Math.round(card.interval * card.easiness * bonus);
+  const now = Date.now();
+  const elapsedDays = card.lastReview > 0
+    ? Math.max((now - card.lastReview) / DAY_MS, 0)
+    : 0;
+
+  if (card.state === 0 || card.reps === 0) {
+    // ── First review (new card) ──
+    card.difficulty = fsrsInitDifficulty(R);
+    card.stability  = fsrsInitStability(R);
+    card.reps       = 1;
+    if (R === 1) {
+      card.state  = 1; // Learning
+      card.lapses += 1;
+      card.scheduledDays = 0;
+      card.dueDate = TODAY_MS() + DAY_MS; // review again tomorrow
+    } else {
+      card.state = 2; // Review
+      card.scheduledDays = fsrsNextInterval(card.stability);
+      card.dueDate = TODAY_MS() + card.scheduledDays * DAY_MS;
     }
-    // Easiness adjustment
-    const q = rating * (5/3); // map 1-3 → 1.67-5
-    card.easiness = Math.max(1.3, card.easiness + 0.1 - (5-q)*(0.08+(5-q)*0.02));
-    card.reps    += 1;
-    card.dueDate  = TODAY_MS() + card.interval * DAY_MS;
+  } else {
+    // ── Subsequent reviews ──
+    const retrievability = fsrsRetrievability(elapsedDays, card.stability);
+    card.difficulty = fsrsNextDifficulty(card.difficulty, R);
+    card.reps += 1;
+
+    if (R === 1) {
+      // Again → lapse
+      card.stability = fsrsNextForgetStability(
+        card.difficulty, card.stability, retrievability
+      );
+      card.lapses += 1;
+      card.state  = 3; // Relearning
+      card.scheduledDays = 0;
+      card.dueDate = TODAY_MS() + DAY_MS;
+    } else {
+      // Hard / Good / Easy → recall
+      card.stability = fsrsNextRecallStability(
+        card.difficulty, card.stability, retrievability, R
+      );
+      card.state = 2; // Review
+      card.scheduledDays = fsrsNextInterval(card.stability);
+      card.dueDate = TODAY_MS() + card.scheduledDays * DAY_MS;
+    }
   }
+
+  card.lastReview = now;
   return card;
 }
 
@@ -67,7 +191,7 @@ function getNewCards() {
 }
 
 function getMatureCards() {
-  return S.cards.filter(c => (c.interval || 0) >= 21);
+  return S.cards.filter(c => (c.stability || 0) >= 21);
 }
 
 function updateSrsStats() {
@@ -170,8 +294,8 @@ function renderFC() {
 
 /* ── Typing answer state ── */
 let typeStep       = 1;
-let typeRdOk       = false;
-let typeMnOk       = false;
+let typeRdGrade    = 'again';  // 'again' | 'hard' | 'good'
+let typeMnGrade    = 'again';
 let wrongCountdown = null;   // setInterval handle for 10s countdown
 let waitingForNext = false;  // true when in the 10s wrong delay
 let currentKanaMode = null;  // 'hiragana' | 'katakana' | null (auto-detected per card)
@@ -186,7 +310,7 @@ function showSrsCard() {
   const c = srsQueue[srsQueueIdx];
   if (!c) return;
 
-  typeStep = 1; typeRdOk = false; typeMnOk = false;
+  typeStep = 1; typeRdGrade = 'again'; typeMnGrade = 'again';
   currentKanaMode = detectKanaMode(c.rd);
 
   document.getElementById('type-kanji').textContent = c.jp;
@@ -210,9 +334,10 @@ function showSrsCard() {
   document.getElementById('type-submit-btn').onclick     = submitTypeAnswer;
   document.getElementById('result-row').style.display    = 'none';
 
+  const stateLabels = ['New', 'Learning', 'Review', 'Relearning'];
   const info = c.reps === 0
     ? 'New card'
-    : `Interval: ${c.interval}d · Ease: ${c.easiness.toFixed(2)} · Reviews: ${c.reps}`;
+    : `S: ${c.stability.toFixed(1)}d · D: ${c.difficulty.toFixed(1)} · ${stateLabels[c.state] || 'Review'} · ${c.reps} reviews`;
   document.getElementById('card-srs-info').textContent = info;
   document.getElementById('session-progress').textContent =
     `${srsQueueIdx + 1} / ${srsQueue.length} · ${srsSessionDone} done`;
@@ -277,11 +402,15 @@ function submitTypeAnswer() {
   if (typeStep === 1) {
     const match = fuzzyMatch(val, c.rd || c.jp);
     if (match === 'exact') {
-      typeRdOk = true;
+      typeRdGrade = 'good';
       inp.className = 'type-input correct';
       fb.textContent = '✓ Correct!'; fb.className = 'type-feedback correct';
+    } else if (match === 'close') {
+      typeRdGrade = 'hard';
+      inp.className = 'type-input close';
+      fb.textContent = `≈ Close — ${c.rd || c.jp}`; fb.className = 'type-feedback close';
     } else {
-      typeRdOk = false;
+      typeRdGrade = 'again';
       inp.className = 'type-input wrong';
       fb.textContent = `✗  ${c.rd || c.jp}`; fb.className = 'type-feedback wrong';
     }
@@ -292,21 +421,31 @@ function submitTypeAnswer() {
       inp.className = 'type-input'; inp.disabled = false;
       fb.textContent = ''; fb.className = 'type-feedback'; fb.style.color = '';
       inp.focus();
-    }, typeRdOk ? 500 : 1000);
+    }, typeRdGrade === 'good' ? 500 : 1000);
 
   } else {
     const match = fuzzyMatch(val, c.mn);
+    let typeMnGrade;
     if (match === 'exact') {
-      typeMnOk = true;
+      typeMnGrade = 'good';
       inp.className = 'type-input correct';
       fb.textContent = '✓ Correct!'; fb.className = 'type-feedback correct';
+    } else if (match === 'close') {
+      typeMnGrade = 'hard';
+      inp.className = 'type-input close';
+      fb.textContent = `≈ Close — ${c.mn}`; fb.className = 'type-feedback close';
     } else {
-      typeMnOk = false;
+      typeMnGrade = 'again';
       inp.className = 'type-input wrong';
       fb.textContent = `✗  ${c.mn}`; fb.className = 'type-feedback wrong';
     }
 
-    const bothCorrect = typeRdOk && typeMnOk;
+    // Combined grade = worst of both steps
+    const gradeRank = { again: 0, hard: 1, good: 2, easy: 3 };
+    const combinedGrade = gradeRank[typeRdGrade] <= gradeRank[typeMnGrade]
+      ? typeRdGrade : typeMnGrade;
+    const isPass = combinedGrade !== 'again';
+
     inp.disabled = true;
     document.getElementById('type-submit-btn').disabled = true;
 
@@ -315,17 +454,19 @@ function submitTypeAnswer() {
       fb.className   = 'type-feedback';
       fb.style.color = 'var(--muted)';
 
-      if (bothCorrect) {
-        srsCardFirstSeen.add(c);
+      srsCardFirstSeen.add(c);
+
+      if (isPass) {
         if (isFirstAttempt && !srsFailedFirstAttempt.has(c)) {
           c.correctCount = (c.correctCount || 0) + 1;
         }
-        const autoRating = (c.correctCount >= 3) ? 'easy' : 'good';
-        // Correct: 0.8s then auto-advance
+        // Upgrade good → easy if consistently correct
+        let autoRating = combinedGrade;
+        if (autoRating === 'good' && c.correctCount >= 3) autoRating = 'easy';
+        // Correct/close: 0.8s then auto-advance
         setTimeout(() => applyRatingAndAdvance(c, autoRating, true), 800);
 
       } else {
-        srsCardFirstSeen.add(c);
         if (isFirstAttempt && !srsFailedFirstAttempt.has(c)) {
           c.correctCount = Math.max(0, (c.correctCount || 0) - 1);
           srsFailedFirstAttempt.add(c);
@@ -334,7 +475,7 @@ function submitTypeAnswer() {
         document.getElementById('result-row').style.display = 'block';
         startWrongCountdown(c);
       }
-    }, bothCorrect ? 400 : 600);
+    }, isPass ? 400 : 600);
   }
 }
 
@@ -345,11 +486,11 @@ function applyRatingAndAdvance(card, rating, isCorrect) {
   const globalIdx = S.cards.findIndex(c => c === card);
 
   if (isCorrect) {
-    if (globalIdx >= 0) S.cards[globalIdx] = sm2(S.cards[globalIdx], r);
+    if (globalIdx >= 0) S.cards[globalIdx] = fsrs(S.cards[globalIdx], r);
     srsQueueIdx++;
     srsSessionDone++;
   } else {
-    if (globalIdx >= 0) S.cards[globalIdx] = sm2(S.cards[globalIdx], 0);
+    if (globalIdx >= 0) S.cards[globalIdx] = fsrs(S.cards[globalIdx], 0);
     const retry = Math.min(srsQueueIdx + 1 + 3, srsQueue.length);
     srsQueue.splice(retry, 0, srsQueue[srsQueueIdx]);
     srsQueueIdx++;
@@ -427,8 +568,9 @@ function renderChips() {
     srsInit(c);
     if (!c.source) c.source = 'manual';
     const isDue    = c.dueDate <= TODAY_MS();
-    const isMature = c.interval >= 21;
-    const tag      = c.reps===0 ? '🆕' : isMature ? '🌟' : isDue ? '⏰' : `${c.interval}d`;
+    const isMature = (c.stability || 0) >= 21;
+    const nextDays = c.scheduledDays || Math.round(c.stability || 0);
+    const tag      = c.reps===0 ? '🆕' : isMature ? '🌟' : isDue ? '⏰' : `${nextDays}d`;
     const cc       = c.correctCount || 0;
     const ccColor  = cc >= 3 ? '#5bbf7a' : cc > 0 ? '#c9a227' : 'var(--muted)';
     return `<div class="chip">
@@ -548,7 +690,7 @@ function saveCard() {
     S.cards[editingCardIdx].rd = rd;
     S.cards[editingCardIdx].mn = mn;
   } else {
-    S.cards.push({ jp, rd, mn, interval:0, easiness:2.5, dueDate:TODAY_MS(), reps:0, lapses:0, correctCount:0, source:'manual' });
+    S.cards.push({ jp, rd, mn, stability:0, difficulty:0, state:0, dueDate:TODAY_MS(), reps:0, lapses:0, lastReview:0, scheduledDays:0, correctCount:0, source:'manual' });
   }
   closeModal(); startSrsSession(); persist();
 }
@@ -668,7 +810,7 @@ function confirmAnkiImport() {
     // Skip duplicates (same jp + mn)
     const isDup = S.cards.some(c => c.jp === jp && c.mn === mn);
     if (isDup) { skipped++; return; }
-    S.cards.push({ jp, rd, mn, interval:0, easiness:2.5, dueDate:TODAY_MS(), reps:0, lapses:0, correctCount:0, source: ankiDeckName || 'Anki' });
+    S.cards.push({ jp, rd, mn, stability:0, difficulty:0, state:0, dueDate:TODAY_MS(), reps:0, lapses:0, lastReview:0, scheduledDays:0, correctCount:0, source: ankiDeckName || 'Anki' });
     imported++;
   });
 
