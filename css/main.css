@@ -31,10 +31,15 @@ header {
   display: flex; align-items: center; padding: 0 16px; gap: 12px;
 }
 .logo-box {
-  width: 32px; height: 32px; background: var(--accent); border-radius: 9px; flex-shrink: 0;
+  width: 36px; height: 36px; background: var(--accent); border-radius: 9px; flex-shrink: 0;
   display: flex; align-items: center; justify-content: center;
   box-shadow: 0 0 18px rgba(192,57,43,.45), 0 2px 8px rgba(0,0,0,.5);
+  overflow: hidden; transition: box-shadow 0.6s ease;
 }
+/* Logo cat transition */
+#logo-cat-awake, #logo-cat-sleep { transition: opacity 0.45s ease; }
+#logo-glow { transition: opacity 0.5s ease; }
+#logo-rays { transition: opacity 0.4s ease 0.15s; }
 .logo { font-family: var(--fd); font-size: 19px; font-weight:700; letter-spacing:.02em; color: var(--text); }
 .logo-sub { font-size: 8px; color: var(--muted); font-family: var(--fm); letter-spacing:.14em; opacity:.8; }
 .header-tabs { flex: 1; display: flex; justify-content: center; }
