@@ -76,10 +76,27 @@ function switchTab(id, btn) {
   document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
   document.getElementById(id+'-view').classList.add('active');
   btn.classList.add('active');
+
+  const isDash = id === 'navigator';
   // Notes tab: hide right panel (it would duplicate the notes editor)
   document.body.classList.toggle('notes-tab-active', id === 'notes');
+  // Dashboard: swap sidebar + right panel
+  document.body.classList.toggle('dash-active', isDash);
+  // Toggle sidebar content
+  const dashSb = document.getElementById('dash-sidebar');
+  const lessonsSec = document.querySelector('.lessons-section');
+  const sideBottom = document.querySelector('.sidebar-bottom');
+  if (dashSb)    dashSb.style.display    = isDash ? '' : 'none';
+  if (lessonsSec) lessonsSec.style.display = isDash ? 'none' : '';
+  if (sideBottom) sideBottom.style.display = isDash ? 'none' : '';
+  // Toggle right panel
+  const dashRight = document.getElementById('dash-right-panel');
+  const notesPanel = document.querySelector('.notes-panel');
+  if (dashRight)  dashRight.style.display  = isDash ? 'flex' : 'none';
+  if (notesPanel) notesPanel.style.display = isDash ? 'none' : '';
+
   if (id==='flashcard') { S.cards.forEach(srsInit); startSrsSession(); }
-  if (id==='navigator') renderDashboard();
+  if (isDash) renderDashboard();
   if (id==='notes')     renderNotesSidebar();
 }
 

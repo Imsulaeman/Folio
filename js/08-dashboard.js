@@ -118,8 +118,8 @@ function getBookCategory(bookName) {
 function setLibFilter(filter, btn) {
   dashFilter = filter;
   dashCategory = null;
-  document.querySelectorAll('.dlib-tab').forEach(b => b.classList.remove('active'));
-  document.querySelectorAll('.dcat-pill').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('.dside-item').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('.dside-cat-item').forEach(b => b.classList.remove('active'));
   if (btn) btn.classList.add('active');
   renderDashBooks();
 }
@@ -127,8 +127,8 @@ function setLibFilter(filter, btn) {
 function setCatFilter(catName, btn) {
   dashCategory = catName;
   dashFilter = 'all';
-  document.querySelectorAll('.dlib-tab').forEach(b => b.classList.remove('active'));
-  document.querySelectorAll('.dcat-pill').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('.dside-item').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('.dside-cat-item').forEach(b => b.classList.remove('active'));
   if (btn) btn.classList.add('active');
   renderDashBooks();
 }
@@ -184,22 +184,24 @@ function renderDashboard() {
   renderDashCategories();
   renderDashBooks();
   renderDashStats();
+  renderMochi();
+  renderMochiNudge();
   updateDueBadge();
 }
 
-/* ── Render: Categories ── */
+/* ── Render: Categories (sidebar) ── */
 function renderDashCategories() {
-  const el = document.getElementById('dash-categories');
+  const el = document.getElementById('dside-cats');
   if (!el) return;
   const cats = Object.keys(getLibrary().categories);
   el.innerHTML =
-    `<button class="dcat-add" onclick="promptAddCategory()">+ Category</button>` +
     cats.map(c =>
-      `<button class="dcat-pill${dashCategory===c?' active':''}" onclick="setCatFilter('${c.replace(/'/g,"\\'")}',this)">
+      `<button class="dside-cat-item${dashCategory===c?' active':''}" onclick="setCatFilter('${c.replace(/'/g,"\\'")}',this)">
         ${c}
-        <span class="dcat-del" onclick="event.stopPropagation();promptDeleteCategory('${c.replace(/'/g,"\\'")}')">×</span>
+        <span class="dside-cat-del" onclick="event.stopPropagation();promptDeleteCategory('${c.replace(/'/g,"\\'")}')">×</span>
       </button>`
-    ).join('');
+    ).join('') +
+    `<button class="dside-cat-add" onclick="promptAddCategory()">+ Add category</button>`;
 }
 
 function promptAddCategory() {
@@ -478,4 +480,122 @@ function dashCtaCards() {
   const btn = document.querySelector('.tab-btn[onclick*="flashcard"]') ||
               document.getElementById('cards-tab-btn');
   if (btn) btn.click();
+}
+
+/* ═══════════════════════════════════
+   MOCHI — Cat Companion
+═══════════════════════════════════ */
+
+function renderMochi() {
+  const avatar = document.getElementById('mochi-avatar');
+  if (!avatar) return;
+  const isLight = document.body.classList.contains('light');
+  const fur   = isLight ? '#2a2420' : '#1a1a1a';
+  const inner = isLight ? '#4a3f38' : '#333';
+  const eye   = isLight ? '#f5c542' : '#f5c542';
+  const nose  = isLight ? '#b06040' : '#c07050';
+
+  avatar.innerHTML = `<svg width="120" height="120" viewBox="0 0 120 120" fill="none">
+    <!-- Body -->
+    <ellipse cx="60" cy="82" rx="32" ry="22" fill="${fur}"/>
+    <!-- Head -->
+    <circle cx="60" cy="50" r="24" fill="${fur}"/>
+    <!-- Left ear -->
+    <polygon points="40,32 34,10 52,28" fill="${fur}"/>
+    <polygon points="42,30 37,15 50,27" fill="${inner}"/>
+    <!-- Right ear -->
+    <polygon points="80,32 86,10 68,28" fill="${fur}"/>
+    <polygon points="78,30 83,15 70,27" fill="${inner}"/>
+    <!-- Eyes -->
+    <ellipse cx="50" cy="48" rx="4.5" ry="5" fill="${eye}"/>
+    <ellipse cx="70" cy="48" rx="4.5" ry="5" fill="${eye}"/>
+    <ellipse cx="50" cy="47" rx="2.5" ry="3" fill="#111"/>
+    <ellipse cx="70" cy="47" rx="2.5" ry="3" fill="#111"/>
+    <!-- Eye highlights -->
+    <circle cx="52" cy="45" r="1.5" fill="#fff" opacity="0.9"/>
+    <circle cx="72" cy="45" r="1.5" fill="#fff" opacity="0.9"/>
+    <!-- Nose -->
+    <ellipse cx="60" cy="55" rx="2.5" ry="1.8" fill="${nose}"/>
+    <!-- Mouth -->
+    <path d="M56 57 Q60 61 64 57" stroke="${inner}" stroke-width="1.2" stroke-linecap="round" fill="none"/>
+    <!-- Whiskers -->
+    <line x1="38" y1="52" x2="48" y2="53" stroke="${inner}" stroke-width="0.8" opacity="0.5"/>
+    <line x1="37" y1="56" x2="48" y2="55" stroke="${inner}" stroke-width="0.8" opacity="0.5"/>
+    <line x1="72" y1="53" x2="82" y2="52" stroke="${inner}" stroke-width="0.8" opacity="0.5"/>
+    <line x1="72" y1="55" x2="83" y2="56" stroke="${inner}" stroke-width="0.8" opacity="0.5"/>
+    <!-- Tail -->
+    <path d="M90 78 Q100 65 95 55" stroke="${fur}" stroke-width="5" stroke-linecap="round" fill="none"/>
+    <!-- Paws -->
+    <ellipse cx="45" cy="98" rx="8" ry="5" fill="${fur}"/>
+    <ellipse cx="75" cy="98" rx="8" ry="5" fill="${fur}"/>
+    <!-- Book under paws -->
+    <rect x="35" y="96" rx="2" width="50" height="8" fill="var(--accent)" opacity="0.7"/>
+    <line x1="60" y1="96" x2="60" y2="104" stroke="#fff" stroke-width="0.5" opacity="0.3"/>
+  </svg>`;
+
+  // Also render the small nudge face
+  const nudgeFace = document.getElementById('mochi-nudge-face');
+  if (nudgeFace) {
+    nudgeFace.innerHTML = `<svg width="36" height="36" viewBox="0 0 120 120" fill="none">
+      <circle cx="60" cy="50" r="24" fill="${fur}"/>
+      <polygon points="40,32 34,10 52,28" fill="${fur}"/>
+      <polygon points="80,32 86,10 68,28" fill="${fur}"/>
+      <ellipse cx="50" cy="48" rx="4.5" ry="5" fill="${eye}"/>
+      <ellipse cx="70" cy="48" rx="4.5" ry="5" fill="${eye}"/>
+      <ellipse cx="50" cy="47" rx="2.5" ry="3" fill="#111"/>
+      <ellipse cx="70" cy="47" rx="2.5" ry="3" fill="#111"/>
+      <circle cx="52" cy="45" r="1.5" fill="#fff" opacity="0.9"/>
+      <circle cx="72" cy="45" r="1.5" fill="#fff" opacity="0.9"/>
+      <ellipse cx="60" cy="55" rx="2.5" ry="1.8" fill="${nose}"/>
+      <path d="M56 57 Q60 61 64 57" stroke="${inner}" stroke-width="1.2" stroke-linecap="round" fill="none"/>
+    </svg>`;
+  }
+}
+
+/* Gentle nudge messages */
+const MOCHI_NUDGES = [
+  { cond: 'long-session',  msgs: [
+    "You've been reading for a while. Try a short break?",
+    "Mochi thinks a stretch would feel good right now.",
+    "Your focus is impressive! Rest your eyes for a moment.",
+  ]},
+  { cond: 'streak',  msgs: [
+    "Keep it up! Mochi is proud of your streak.",
+    "Another day of studying — Mochi approves!",
+  ]},
+  { cond: 'cards-due',  msgs: [
+    "Some flashcards are waiting for you!",
+    "Review time? Mochi will keep you company.",
+  ]},
+  { cond: 'welcome',  msgs: [
+    "Welcome back! Ready to learn something new?",
+    "Mochi missed you! Let's study together.",
+    "Good to see you! What shall we read today?",
+  ]},
+];
+
+function getMochiNudge() {
+  const d = loadStore() || {};
+  const due = getDueCards().length;
+  const streak = getStreak();
+
+  // Pick condition
+  let pool;
+  if (due > 3) pool = MOCHI_NUDGES.find(n => n.cond === 'cards-due');
+  else if (streak > 2) pool = MOCHI_NUDGES.find(n => n.cond === 'streak');
+  else pool = MOCHI_NUDGES.find(n => n.cond === 'welcome');
+
+  if (!pool) return null;
+  return pool.msgs[Math.floor(Math.random() * pool.msgs.length)];
+}
+
+function renderMochiNudge() {
+  const el = document.getElementById('mochi-nudge');
+  const txt = document.getElementById('mochi-nudge-text');
+  if (!el || !txt) return;
+  const msg = getMochiNudge();
+  if (msg) {
+    txt.textContent = '"' + msg + '"';
+    el.style.display = '';
+  }
 }
