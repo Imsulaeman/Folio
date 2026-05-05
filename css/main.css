@@ -1069,6 +1069,14 @@ body.light #epub-content { color: #1a1a1a !important; }
 .dbook-status-sel:hover,
 .dbook-cat-sel:hover { border-color: var(--accent); color: var(--text); }
 
+.dbook-card.hidden-card { opacity: .6; border-style: dashed; }
+.dash-btn.danger {
+  color: var(--accent); border-color: rgba(192,57,43,.3);
+}
+.dash-btn.danger:hover {
+  background: rgba(192,57,43,.15); border-color: var(--accent); color: #fff;
+}
+
 .dash-empty {
   grid-column: 1 / -1; text-align: center; padding: 40px 20px;
   color: var(--muted); font-size: 12px; line-height: 1.7;
@@ -1091,9 +1099,9 @@ body.light #epub-content { color: #1a1a1a !important; }
   text-align: center;
 }
 .mochi-avatar {
-  width: 120px; height: 120px;
+  width: 160px; height: 180px;
   display: flex; align-items: center; justify-content: center;
-  margin-bottom: 8px;
+  margin-bottom: 4px;
 }
 .mochi-name {
   font-family: var(--fd); font-size: 18px; font-weight: 700;
