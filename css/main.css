@@ -368,9 +368,11 @@ main { overflow: hidden; position: relative; grid-column: 2; }
 .textLayer ::-moz-selection  { background: rgba(192,57,43,.40); color: transparent; }
 
 .pdf-ph {
-  position: absolute; inset: 0;
-  display: flex; flex-direction: column; align-items: center; justify-content: center;
-  gap: 14px; color: var(--muted); text-align: center;
+  position: fixed;
+  top: 50%; left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 50;
+  color: var(--muted); text-align: center;
 }
 .pdf-ph .big { font-size: 52px; opacity:.2; }
 .pdf-ph h3 { font-size: 15px; font-weight:400; }
