@@ -370,6 +370,7 @@ main { overflow: hidden; position: relative; grid-column: 2; }
 .pdf-ph {
   display: flex; flex-direction: column; align-items: center; justify-content: center;
   height: 100%; gap: 14px; color: var(--muted); text-align: center; width: 100%;
+  align-self: stretch;
 }
 .pdf-ph .big { font-size: 52px; opacity:.2; }
 .pdf-ph h3 { font-size: 15px; font-weight:400; }
