@@ -8,6 +8,9 @@ async function loadEpub(url, lessonName) {
   // Hide PDF elements, show epub reader
   document.getElementById('pdf-page-wrap').style.display = 'none';
   document.getElementById('pdf-ph').style.display        = 'none';
+  // Show notes panel when a lesson is loaded
+  const np = document.querySelector('.notes-panel');
+  if (np && !document.body.classList.contains('dash-active')) np.style.display = '';
   const wrap    = document.getElementById('epub-wrap');
   const content = document.getElementById('epub-content');
   wrap.style.display = 'block';

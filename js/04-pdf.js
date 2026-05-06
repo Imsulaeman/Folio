@@ -65,6 +65,9 @@ function clearReader() {
   document.getElementById('page-info').textContent  = 'No PDF loaded';
   document.getElementById('prev-btn').disabled = true;
   document.getElementById('next-btn').disabled = true;
+  // Hide notes panel when no lesson is loaded (welcome screen)
+  const np = document.querySelector('.notes-panel');
+  if (np) np.style.display = 'none';
   // Clear draw canvas
   const dc = document.getElementById('draw-canvas');
   if (dc) { const ctx = dc.getContext('2d'); ctx.clearRect(0,0,dc.width,dc.height); }
@@ -217,6 +220,9 @@ async function loadPDF(url, lessonName) {
   document.getElementById('epub-wrap').style.display      = 'none';
   document.getElementById('pdf-ph').style.display         = 'none';
   document.getElementById('pdf-page-wrap').style.display  = 'block';
+  // Show notes panel when a lesson is loaded
+  const np = document.querySelector('.notes-panel');
+  if (np && !document.body.classList.contains('dash-active')) np.style.display = '';
   // Restore default prev/next button behaviour (may have been overridden by epub)
   document.getElementById('prev-btn').onclick = () => changePage(-1);
   document.getElementById('next-btn').onclick = () => changePage(1);

@@ -197,11 +197,11 @@ body.dash-active { grid-template-columns: 260px 1fr 260px; }
 .dash-card-meta { font-size:9px; color:var(--muted); font-family:var(--fm); line-height:1.7; }
 .dash-card-actions { display:flex; gap:5px; margin-top:8px; }
 .dash-btn {
-  flex:1; background:var(--bg3); border:1px solid var(--border); color:var(--muted);
-  padding:3px 6px; border-radius:4px; cursor:pointer; font-size:10px;
+  flex:1; background:var(--bg2); border:1px solid rgba(255,255,255,.12); color:var(--text);
+  padding:4px 8px; border-radius:5px; cursor:pointer; font-size:10px;
   font-family:var(--fb); transition:all .15s; text-align:center;
 }
-.dash-btn:hover { border-color:var(--accent); color:var(--text); }
+.dash-btn:hover { border-color:var(--accent); color:var(--accent); }
 .dash-btn.primary { background:var(--accent); border-color:var(--accent); color:#fff; }
 .dash-btn.primary:hover { background:var(--acc2); }
 
@@ -1056,25 +1056,25 @@ body.light #epub-content { color: #1a1a1a !important; }
   text-align: right;
 }
 .dbook-actions {
-  display: flex; gap: 5px; margin-top: 4px; align-items: center;
+  display: flex; gap: 5px; margin-top: 8px; align-items: center;
   flex-wrap: wrap;
 }
 .dbook-status-sel,
 .dbook-cat-sel {
-  background: var(--bg3); border: 1px solid var(--border); color: var(--muted);
-  padding: 3px 6px; border-radius: 4px; font-size: 10px;
+  background: var(--bg2); border: 1px solid rgba(255,255,255,.12); color: var(--text);
+  padding: 4px 8px; border-radius: 5px; font-size: 10px;
   font-family: var(--fb); cursor: pointer; transition: all .15s;
   outline: none;
 }
 .dbook-status-sel:hover,
-.dbook-cat-sel:hover { border-color: var(--accent); color: var(--text); }
+.dbook-cat-sel:hover { border-color: var(--accent); color: var(--accent); }
 
 .dbook-card.hidden-card { opacity: .6; border-style: dashed; }
 .dash-btn.danger {
-  color: var(--accent); border-color: rgba(192,57,43,.3);
+  color: #e85d4a; border-color: rgba(192,57,43,.35); background: rgba(192,57,43,.08);
 }
 .dash-btn.danger:hover {
-  background: rgba(192,57,43,.15); border-color: var(--accent); color: #fff;
+  background: rgba(192,57,43,.2); border-color: var(--accent); color: #fff;
 }
 
 .dash-empty {
@@ -1253,8 +1253,12 @@ body.light .dside-cat-item.active {
   background: rgba(0,0,0,.05);
 }
 body.light .dbook-status-sel,
-body.light .dbook-cat-sel {
-  background: var(--bg);
+body.light .dbook-cat-sel,
+body.light .dash-btn {
+  background: var(--bg); border-color: var(--border); color: var(--text);
+}
+body.light .dash-btn.danger {
+  color: var(--accent); background: rgba(192,57,43,.06);
 }
 body.light .mochi-nudge {
   background: var(--bg2);
