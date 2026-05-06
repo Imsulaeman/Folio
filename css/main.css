@@ -922,7 +922,7 @@ body.light #epub-content { color: #1a1a1a !important; }
   margin-bottom: 5px;
 }
 .dash-greeting-sub { font-size: 12px; color: var(--muted); font-family: var(--fm); }
-.dash-cta-row { display: flex; gap: 8px; flex-wrap: wrap; padding: 12px 20px 0; }
+.dash-cta-row { display: flex; gap: 8px; flex-wrap: wrap; padding: 12px 20px 0; justify-content: center; }
 .dash-cta-btn {
   display: inline-flex; align-items: center; gap: 6px;
   background: var(--accent); color: #fff; border: none; border-radius: 7px;
@@ -941,7 +941,7 @@ body.light #epub-content { color: #1a1a1a !important; }
 ═══════════════════════════════════ */
 
 /* Header */
-.dash-header { padding: 24px 28px 0; }
+.dash-header { padding: 24px 28px 0; text-align: center; }
 .dash-date {
   font-size: 10px; letter-spacing: .18em; text-transform: uppercase;
   color: var(--muted); font-family: var(--fm); display: block; margin-bottom: 6px;

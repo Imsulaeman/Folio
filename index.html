@@ -11,7 +11,7 @@
   <link rel="stylesheet" href="css/main.css">
 </head>
 
-<body>
+<body class="dash-active">
 
 <!-- HEADER -->
 <header>
@@ -118,7 +118,7 @@
 <aside>
 
   <!-- ── Dashboard sidebar (hidden until Dashboard tab) ── -->
-  <div class="dash-sidebar" id="dash-sidebar" style="display:none">
+  <div class="dash-sidebar" id="dash-sidebar">
     <div class="lessons-header">
       <span class="section-label">Library</span>
     </div>
@@ -152,7 +152,7 @@
   </div>
 
   <!-- ── Top: compact lessons ── -->
-  <div class="lessons-section">
+  <div class="lessons-section" style="display:none">
     <div class="lessons-header">
       <span class="section-label">Lessons</span>
       <label for="pdf-upload"><button class="upload-btn-sm" onclick="this.closest('label').click();event.preventDefault()">+ PDF / EPUB</button></label>
@@ -166,7 +166,7 @@
   </div>
 
   <!-- ── Bottom: Audio + Quick Note ── -->
-  <div class="sidebar-bottom">
+  <div class="sidebar-bottom" style="display:none">
     <div class="mini-tabs">
       <button class="mini-tab active" id="mtab-audio" onclick="switchSidebarTab('audio',this)">🎵 Audio</button>
     </div>
@@ -540,7 +540,7 @@
 </main>
 
 <!-- RIGHT DASHBOARD PANEL (companion + stats) -->
-<div class="dash-right-panel" id="dash-right-panel" style="display:none">
+<div class="dash-right-panel" id="dash-right-panel" style="display:flex">
   <!-- Mochi companion -->
   <div class="mochi-card">
     <div class="mochi-avatar" id="mochi-avatar"></div>

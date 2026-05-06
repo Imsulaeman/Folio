@@ -2,9 +2,8 @@
    DASHBOARD — Library + Visual Stats
 ═══════════════════════════════════ */
 
-/* Mochi mascot images (compressed WebP, base64) */
-const MOCHI_DARK  = 'img/mochi-dark.webp';
-const MOCHI_LIGHT = 'img/mochi-light.webp';
+/* Mochi mascot image (compressed WebP — single image for both themes) */
+const MOCHI_IMG = 'img/mochi-dark.webp';
 
 let dashFilter   = 'reading';   // 'reading' | 'to-read' | 'finished' | 'all'
 let dashCategory = null;        // null = all categories
@@ -499,14 +498,12 @@ function dashCtaCards() {
 function renderMochi() {
   const avatar = document.getElementById('mochi-avatar');
   if (!avatar) return;
-  const isLight = document.body.classList.contains('light');
-  const src = isLight ? MOCHI_LIGHT : MOCHI_DARK;
-  avatar.innerHTML = `<img src="${src}" alt="Mochi" width="180" height="180" style="border-radius:12px;object-fit:contain">`;
+  avatar.innerHTML = `<img src="${MOCHI_IMG}" alt="Mochi" width="180" height="180" style="border-radius:12px;object-fit:contain">`;
 
   // Small nudge face reuses same image
   const nudgeFace = document.getElementById('mochi-nudge-face');
   if (nudgeFace) {
-    nudgeFace.innerHTML = `<img src="${src}" alt="Mochi" width="36" height="36" style="border-radius:6px;object-fit:contain">`;
+    nudgeFace.innerHTML = `<img src="${MOCHI_IMG}" alt="Mochi" width="36" height="36" style="border-radius:6px;object-fit:contain">`;
   }
 }
 
