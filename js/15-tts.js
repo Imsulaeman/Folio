@@ -69,9 +69,10 @@ setInterval(updateDueBadge, 60000);
 
 // Open IndexedDB then auto-restore PDFs stored from previous sessions
 openIDB().then(async () => {
-  await restorePDFsFromIDB();
+  // Restore all PDFs from IDB but DON'T select a lesson yet
+  await restorePDFsFromIDB(/* skipSelect */ true);
 
-  // Apply saved order
+  // Apply saved order BEFORE selecting any lesson
   if (S._pendingOrder?.length) {
     const ordered = [];
     S._pendingOrder.forEach(name => {
@@ -81,10 +82,9 @@ openIDB().then(async () => {
     // Append any lessons not in saved order (newly added)
     S.lessons.forEach(l => { if (!ordered.find(o => o.name === l.name)) ordered.push(l); });
     S.lessons = ordered;
-    renderSidebar(); renderNotesSidebar();
   }
 
-  // Apply hidden lessons
+  // Apply hidden lessons BEFORE selecting any lesson
   if (S._pendingHidden?.length) {
     S._pendingHidden.forEach(name => {
       const idx = S.lessons.findIndex(l => l.name === name);
@@ -93,7 +93,15 @@ openIDB().then(async () => {
         S.hiddenLessons.push(lesson);
       }
     });
+  }
+
+  // Now select the first visible lesson, or clear the reader if none
+  if (S.lessons.length) {
     renderSidebar(); renderNotesSidebar();
+    selectLesson(0);
+  } else {
+    renderSidebar(); renderNotesSidebar();
+    clearReader();
   }
 
   setMode('select');

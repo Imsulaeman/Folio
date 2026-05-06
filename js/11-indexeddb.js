@@ -58,7 +58,7 @@ async function savePdfToIDB(name, file) {
 }
 
 /* Load all stored PDFs/EPUBs on startup and restore them */
-async function restorePDFsFromIDB() {
+async function restorePDFsFromIDB(skipSelect) {
   const keys = await idbGetAll('pdfs');
   for (const name of keys) {
     const stored = await idbGet('pdfs', name);
@@ -80,9 +80,11 @@ async function restorePDFsFromIDB() {
     }
   }
   if (S.lessons.length) {
-    renderSidebar(); renderNotesSidebar();
-    selectLesson(0);
     document.getElementById('restore-banner')?.remove();
     showToast(`↩ ${S.lessons.length} lesson(s) restored automatically`);
+    if (!skipSelect) {
+      renderSidebar(); renderNotesSidebar();
+      selectLesson(0);
+    }
   }
 }
