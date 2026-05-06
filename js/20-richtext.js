@@ -36,12 +36,40 @@ function rtLink() {
   }
 }
 
+function rtFontSize(size) {
+  if (!size) return;
+  document.execCommand('fontSize', false, size);
+}
+
+function rtToggleQuote() {
+  // Check if cursor is inside a blockquote — if so, unwrap it
+  const sel = window.getSelection();
+  if (!sel.rangeCount) return;
+  const bq = sel.anchorNode?.parentElement?.closest('blockquote');
+  if (bq) {
+    // Unwrap: replace blockquote with its contents
+    const parent = bq.parentNode;
+    while (bq.firstChild) parent.insertBefore(bq.firstChild, bq);
+    parent.removeChild(bq);
+  } else {
+    document.execCommand('formatBlock', false, 'blockquote');
+  }
+}
+
 function rtCode() {
   const sel = window.getSelection();
   if (!sel.rangeCount) return;
   const range = sel.getRangeAt(0);
   const text = range.toString();
   if (!text) return;
+  // Check if already in a code element — unwrap
+  const existing = sel.anchorNode?.parentElement?.closest('code');
+  if (existing) {
+    const parent = existing.parentNode;
+    while (existing.firstChild) parent.insertBefore(existing.firstChild, existing);
+    parent.removeChild(existing);
+    return;
+  }
   const code = document.createElement('code');
   range.surroundContents(code);
 }

@@ -504,17 +504,30 @@
             <option value="h3">H3</option>
             <option value="p">Normal</option>
           </select>
+          <select class="rt-select" onchange="rtFontSize(this.value);this.value=''" title="Font size">
+            <option value="">Size</option>
+            <option value="1">Small</option>
+            <option value="3">Normal</option>
+            <option value="4">Large</option>
+            <option value="5">X-Large</option>
+            <option value="6">Huge</option>
+          </select>
           <div class="rt-sep"></div>
           <button class="rt-btn" onclick="rtCmd('bold')" title="Bold (Ctrl+B)"><b>B</b></button>
           <button class="rt-btn" onclick="rtCmd('italic')" title="Italic (Ctrl+I)"><i>I</i></button>
           <button class="rt-btn" onclick="rtCmd('underline')" title="Underline (Ctrl+U)"><u>U</u></button>
           <button class="rt-btn" onclick="rtCmd('strikeThrough')" title="Strikethrough"><s>S</s></button>
+          <label class="rt-btn rt-color-label" title="Text color">
+            A<input type="color" class="rt-color-input" value="#ffffff" onchange="rtCmd('foreColor',this.value)">
+          </label>
+          <button class="rt-btn" onclick="rtCmd('foreColor','inherit');rtCmd('removeFormat')" title="Reset color">A̲</button>
           <div class="rt-sep"></div>
           <button class="rt-btn" onclick="rtCmd('insertUnorderedList')" title="Bullet list">• List</button>
           <button class="rt-btn" onclick="rtCmd('insertOrderedList')" title="Numbered list">1. List</button>
           <div class="rt-sep"></div>
           <button class="rt-btn" onclick="rtLink()" title="Insert link (Ctrl+K)">🔗</button>
-          <button class="rt-btn" onclick="rtCmd('formatBlock','blockquote')" title="Quote">❝</button>
+          <button class="rt-btn" onclick="rtCmd('unlink')" title="Remove link">🔗̸</button>
+          <button class="rt-btn" onclick="rtToggleQuote()" title="Toggle quote">❝</button>
           <button class="rt-btn" onclick="rtCode()" title="Inline code">&lt;/&gt;</button>
           <div class="rt-sep"></div>
           <button class="rt-btn" onclick="rtCmd('removeFormat')" title="Clear formatting">✕</button>
@@ -679,6 +692,7 @@
   <button class="rt-btn" onmousedown="event.preventDefault();rtCmd('underline')" title="Underline"><u>U</u></button>
   <button class="rt-btn" onmousedown="event.preventDefault();rtCmd('strikeThrough')" title="Strikethrough"><s>S</s></button>
   <button class="rt-btn" onmousedown="event.preventDefault();rtLink()" title="Link">🔗</button>
+  <button class="rt-btn" onmousedown="event.preventDefault();rtCmd('unlink')" title="Remove link">✂</button>
 </div>
 <audio id="audio-el"></audio>
 <div id="toast"></div>
