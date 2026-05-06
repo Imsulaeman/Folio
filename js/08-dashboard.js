@@ -53,7 +53,7 @@ function getNoteWordCount() {
   const notes = d.notes || {};
   let total = 0;
   Object.values(notes).forEach(arr => {
-    if (Array.isArray(arr)) arr.forEach(n => { total += (n.text||'').trim().split(/\s+/).filter(Boolean).length; });
+    if (Array.isArray(arr)) arr.forEach(n => { total += (n.text||'').replace(/<[^>]+>/g,'').trim().split(/\s+/).filter(Boolean).length; });
   });
   return total;
 }

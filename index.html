@@ -493,12 +493,34 @@
         <div class="notes-header">
           <div class="notes-title" id="notes-title">—</div>
           <div class="notes-status" id="note-status">saved</div>
-          <button class="notes-preview-toggle" id="notes-tab-preview-btn" onclick="toggleNotesTabPreview()" title="Toggle markdown preview">Preview</button>
           <button class="notes-action" onclick="exportNotes()">⬇ Export</button>
         </div>
-        <textarea class="notes-textarea" id="note-area"
-          placeholder="Write your notes here…&#10;&#10;# Heading&#10;## Subheading&#10;&#10;• vocabulary and meanings&#10;• grammar rules in your own words&#10;• select PDF text → click 📝 Add to Notes"></textarea>
-        <div class="notes-preview-pane" id="notes-tab-preview" style="flex:1;overflow-y:auto"></div>
+        <!-- Rich text toolbar -->
+        <div class="rt-toolbar" id="rt-toolbar">
+          <select class="rt-select" onchange="rtHeading(this.value);this.value=''" title="Heading">
+            <option value="">Heading</option>
+            <option value="h1">H1</option>
+            <option value="h2">H2</option>
+            <option value="h3">H3</option>
+            <option value="p">Normal</option>
+          </select>
+          <div class="rt-sep"></div>
+          <button class="rt-btn" onclick="rtCmd('bold')" title="Bold (Ctrl+B)"><b>B</b></button>
+          <button class="rt-btn" onclick="rtCmd('italic')" title="Italic (Ctrl+I)"><i>I</i></button>
+          <button class="rt-btn" onclick="rtCmd('underline')" title="Underline (Ctrl+U)"><u>U</u></button>
+          <button class="rt-btn" onclick="rtCmd('strikeThrough')" title="Strikethrough"><s>S</s></button>
+          <div class="rt-sep"></div>
+          <button class="rt-btn" onclick="rtCmd('insertUnorderedList')" title="Bullet list">• List</button>
+          <button class="rt-btn" onclick="rtCmd('insertOrderedList')" title="Numbered list">1. List</button>
+          <div class="rt-sep"></div>
+          <button class="rt-btn" onclick="rtLink()" title="Insert link (Ctrl+K)">🔗</button>
+          <button class="rt-btn" onclick="rtCmd('formatBlock','blockquote')" title="Quote">❝</button>
+          <button class="rt-btn" onclick="rtCode()" title="Inline code">&lt;/&gt;</button>
+          <div class="rt-sep"></div>
+          <button class="rt-btn" onclick="rtCmd('removeFormat')" title="Clear formatting">✕</button>
+        </div>
+        <div class="notes-richtext" id="note-area" contenteditable="true"
+          data-placeholder="Write your notes here…"></div>
       </div>
     </div>
   </div>
@@ -563,7 +585,6 @@
     <div class="notes-panel-title" id="np-title">📝 Notes</div>
     <div class="notes-panel-status" id="np-status"></div>
     <div class="notes-panel-actions">
-      <button class="notes-preview-toggle" id="np-preview-btn" onclick="toggleNotesPreview()" title="Toggle markdown preview" style="display:none">Preview</button>
       <button class="notes-panel-action" onclick="exportNotes()" title="Export all notes as JSON">⬇</button>
       <label for="np-import-file" title="Import notes JSON">
         <div class="notes-panel-action" style="cursor:pointer">⬆</div>
@@ -580,10 +601,9 @@
   <div id="np-wrap" style="flex:1;min-height:0;display:none;flex-direction:column;overflow:hidden">
     <!-- Note tab switcher -->
     <div id="np-note-bar" style="display:flex;align-items:center;gap:4px;padding:5px 10px;overflow-x:auto;flex-shrink:0;background:var(--bg2);border-bottom:1px solid var(--border)"></div>
-    <textarea class="notes-panel-textarea" id="np-area"
-      style="flex:1;min-height:0;display:block;width:100%;box-sizing:border-box"
-      placeholder="Write your notes here…&#10;&#10;# Heading&#10;## Subheading&#10;&#10;• vocabulary and meanings&#10;• grammar rules in your own words&#10;&#10;Select PDF text → click 📝 Add to Notes"></textarea>
-    <div class="notes-preview-pane" id="np-preview"></div>
+    <div class="notes-richtext np-richtext" id="np-area" contenteditable="true"
+      style="flex:1;min-height:0;overflow-y:auto;width:100%;box-sizing:border-box"
+      data-placeholder="Write your notes here…"></div>
   </div>
 </div>
 
@@ -652,6 +672,14 @@
   <div onclick="addSelectionToNotes()" style="padding:5px 10px;cursor:pointer;border-right:1px solid rgba(255,255,255,.1)">📝 Add to Notes</div>
   <div onclick="speakSelection()" style="padding:5px 10px;cursor:pointer" title="Speak selected text">🔊</div>
 </div>
+<!-- Floating rich-text format popup -->
+<div class="rt-float-popup" id="rt-float-popup">
+  <button class="rt-btn" onmousedown="event.preventDefault();rtCmd('bold')" title="Bold"><b>B</b></button>
+  <button class="rt-btn" onmousedown="event.preventDefault();rtCmd('italic')" title="Italic"><i>I</i></button>
+  <button class="rt-btn" onmousedown="event.preventDefault();rtCmd('underline')" title="Underline"><u>U</u></button>
+  <button class="rt-btn" onmousedown="event.preventDefault();rtCmd('strikeThrough')" title="Strikethrough"><s>S</s></button>
+  <button class="rt-btn" onmousedown="event.preventDefault();rtLink()" title="Link">🔗</button>
+</div>
 <audio id="audio-el"></audio>
 <div id="toast"></div>
 
@@ -675,5 +703,6 @@
 <script src="js/17-markdown.js"></script>
 <script src="js/18-notes-preview.js"></script>
 <script src="js/19-kana.js"></script>
+<script src="js/20-richtext.js"></script>
 </body>
 </html>

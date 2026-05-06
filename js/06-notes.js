@@ -11,14 +11,12 @@ function updateNotesPanel() {
   const wrap= document.getElementById('np-wrap');
   const bar = document.getElementById('np-note-bar');
 
-  const prevBtn = document.getElementById('np-preview-btn');
   if (!S.currentLessonName) {
     ph.style.display   = 'flex';
     wrap.style.display = 'none';
     ttl.textContent    = '📝 Notes';
     ttl.classList.remove('has-lesson');
     sts.textContent    = '';
-    if (prevBtn) prevBtn.style.display = 'none';
     return;
   }
 
@@ -26,7 +24,6 @@ function updateNotesPanel() {
   wrap.style.display = 'flex';
   ttl.textContent    = formatLessonName(S.currentLessonName);
   ttl.classList.add('has-lesson');
-  if (prevBtn) prevBtn.style.display = '';
 
   // Ensure at least one note exists
   if (!getNotes(S.currentLessonName).length) addNote(S.currentLessonName);
@@ -36,7 +33,7 @@ function updateNotesPanel() {
   const activeId   = getActiveNoteId(S.currentLessonName);
   const activeNote = getActiveNote(S.currentLessonName);
   sts.textContent  = 'saved';
-  ta.value         = activeNote?.text || '';
+  ta.innerHTML     = migrateNoteToHtml(activeNote?.text || '');
 
   // Scroll to bottom (most recent writing)
   requestAnimationFrame(() => { ta.scrollTop = ta.scrollHeight; });
@@ -46,9 +43,9 @@ function updateNotesPanel() {
     clearTimeout(npTimer);
     const lid = S.currentLessonName, nid = getActiveNoteId(lid);
     npTimer = setTimeout(() => {
-      saveNoteById(lid, nid, this.value);
+      saveNoteById(lid, nid, this.innerHTML);
       sts.textContent = '✓ saved';
-      syncNoteToTab(lid, nid, this.value);
+      syncNoteToTab(lid, nid, this.innerHTML);
     }, 500);
   };
 }
@@ -79,7 +76,7 @@ function renderNpBar() {
     renderNpBar();
     renderNotesSidebar();
     const ta = document.getElementById('np-area');
-    ta.value = '';
+    ta.innerHTML = '';
     ta.focus();
     syncNoteToTab(S.currentLessonName, id, '');
   };
@@ -90,31 +87,26 @@ function switchNpNote(noteId) {
   setActiveNoteId(S.currentLessonName, noteId);
   const ta   = document.getElementById('np-area');
   const note = getNotes(S.currentLessonName).find(n => n.id === noteId);
-  ta.value   = note?.text || '';
+  ta.innerHTML = migrateNoteToHtml(note?.text || '');
   requestAnimationFrame(() => { ta.scrollTop = ta.scrollHeight; });
   document.getElementById('np-status').textContent = 'saved';
-  // If preview is active, update preview content
-  if (notesPreviewMode) {
-    const preview = document.getElementById('np-preview');
-    if (preview) preview.innerHTML = simpleMarkdown(note?.text || '');
-  }
   renderNpBar();
   // Sync Notes tab if same lesson
   if (S.activeNoteLesson === S.currentLessonName) {
     S.activeNoteId = noteId;
     const na = document.getElementById('note-area');
-    if (na) na.value = note?.text || '';
+    if (na) na.innerHTML = migrateNoteToHtml(note?.text || '');
     const ttl = document.getElementById('notes-title');
     if (ttl) ttl.textContent = '📝 ' + S.currentLessonName + ' › ' + (note?.name || '');
     renderNotesSidebar();
   }
 }
 
-function syncNoteToTab(lessonName, noteId, text) {
+function syncNoteToTab(lessonName, noteId, html) {
   // Update Notes tab if it has the same lesson+note open
   if (S.activeNoteLesson === lessonName && S.activeNoteId === noteId) {
     const na = document.getElementById('note-area');
-    if (na) na.value = text;
+    if (na) na.innerHTML = html;
     document.getElementById('note-status').textContent = '✓ saved';
   }
 }
@@ -247,21 +239,12 @@ function openNote(lessonName, noteId) {
   document.getElementById('notes-ph').style.display     = 'none';
   document.getElementById('notes-editor').style.display = 'flex';
 
-  // Reset preview mode when switching notes
-  if (notesTabPreviewMode) {
-    notesTabPreviewMode = false;
-    document.getElementById('notes-tab-preview-btn')?.classList.remove('active');
-    document.getElementById('notes-tab-preview')?.classList.remove('visible');
-    const ta0 = document.getElementById('note-area');
-    if (ta0) ta0.style.display = '';
-  }
-
   const note = getNotes(lessonName).find(n => n.id === noteId);
   document.getElementById('notes-title').textContent  = '📝 ' + lessonName + (note ? ' › ' + note.name : '');
   document.getElementById('note-status').textContent  = 'saved';
 
   const ta = document.getElementById('note-area');
-  ta.value = note?.text || '';
+  ta.innerHTML = migrateNoteToHtml(note?.text || '');
   // Scroll to bottom
   requestAnimationFrame(() => { ta.scrollTop = ta.scrollHeight; });
 
@@ -270,24 +253,30 @@ function openNote(lessonName, noteId) {
     clearTimeout(noteTimer);
     const lid = lessonName, nid = noteId;
     noteTimer = setTimeout(() => {
-      saveNoteById(lid, nid, this.value);
+      saveNoteById(lid, nid, this.innerHTML);
       document.getElementById('note-status').textContent = '✓ saved';
       // Sync right panel if same lesson+note
       if (S.currentLessonName === lid && getActiveNoteId(lid) === nid) {
         const np = document.getElementById('np-area');
-        if (np) np.value = this.value;
+        if (np) np.innerHTML = this.innerHTML;
         document.getElementById('np-status').textContent = '✓ saved';
       }
     }, 500);
   };
   ta.focus();
-  ta.selectionStart = ta.selectionEnd = ta.value.length;
+  // Place cursor at end of contenteditable
+  const range = document.createRange();
+  range.selectNodeContents(ta);
+  range.collapse(false);
+  const sel = window.getSelection();
+  sel.removeAllRanges();
+  sel.addRange(range);
 
   // Sync right panel to this note if same lesson
   if (S.currentLessonName === lessonName) {
     setActiveNoteId(lessonName, noteId);
     const npTa = document.getElementById('np-area');
-    if (npTa) { npTa.value = note?.text || ''; requestAnimationFrame(() => { npTa.scrollTop = npTa.scrollHeight; }); }
+    if (npTa) { npTa.innerHTML = migrateNoteToHtml(note?.text || ''); requestAnimationFrame(() => { npTa.scrollTop = npTa.scrollHeight; }); }
     renderNpBar();
   }
 }
@@ -299,7 +288,7 @@ document.addEventListener('keydown', e => {
     if (S.activeNoteLesson && S.activeNoteId && document.activeElement === ta) {
       e.preventDefault();
       clearTimeout(noteTimer);
-      saveNoteById(S.activeNoteLesson, S.activeNoteId, ta.value);
+      saveNoteById(S.activeNoteLesson, S.activeNoteId, ta.innerHTML);
       document.getElementById('note-status').textContent = '✓ saved';
       showToast('Saved');
     }

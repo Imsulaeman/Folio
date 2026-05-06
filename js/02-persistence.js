@@ -250,7 +250,7 @@ function deleteNoteById(lessonName, noteId) {
 }
 
 function hasNote(lessonName) {
-  return getNotes(lessonName).some(n => n.text?.trim());
+  return getNotes(lessonName).some(n => n.text?.replace(/<[^>]+>/g,'').trim());
 }
 
 // Legacy compat for addSelectionToNotes

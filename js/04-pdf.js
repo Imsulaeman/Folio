@@ -444,25 +444,28 @@ function addSelectionToNotes() {
   const target = S.currentLessonName || S.activeNoteLesson;
   if (!target) { showToast('Open a lesson first'); return; }
 
-  const append = '\n\n— PDF —\n' + lastSel + '\n';
+  // Build HTML snippet for the selection
+  const escaped = lastSel.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  const appendHtml = `<blockquote style="border-left:3px solid var(--accent);padding:4px 12px;margin:8px 0;color:var(--muted);font-style:italic">📖 ${escaped}</blockquote><p><br></p>`;
 
   // Ensure a note exists
   const noteId = getActiveNoteId(target) || ensureNote(target);
   const existing = getNotes(target).find(n => n.id === noteId);
-  const newText  = (existing?.text || '') + append;
+  const oldHtml  = migrateNoteToHtml(existing?.text || '');
+  const newText  = oldHtml + appendHtml;
   saveNoteById(target, noteId, newText);
 
   // Update right panel if current lesson
   if (S.currentLessonName === target) {
     const ta = document.getElementById('np-area');
-    if (ta) { ta.value = newText; ta.scrollTop = ta.scrollHeight; }
+    if (ta) { ta.innerHTML = newText; ta.scrollTop = ta.scrollHeight; }
     document.getElementById('np-status').textContent = '✓ saved';
   }
 
   // Update Notes tab if same lesson+note open
   if (S.activeNoteLesson === target && S.activeNoteId === noteId) {
     const na = document.getElementById('note-area');
-    if (na) { na.value = newText; na.scrollTop = na.scrollHeight; }
+    if (na) { na.innerHTML = newText; na.scrollTop = na.scrollHeight; }
     document.getElementById('note-status').textContent = '✓ saved';
   }
 
