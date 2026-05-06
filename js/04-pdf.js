@@ -369,6 +369,7 @@ function fitPage() { S.scale='auto'; if (S.pdfDoc) renderPage(); }
 document.addEventListener('keydown', e => {
   const tag = document.activeElement?.tagName;
   if (tag==='INPUT'||tag==='TEXTAREA'||tag==='SELECT') return;
+  if (document.activeElement?.isContentEditable) return;
   if (document.getElementById('modal-bg').classList.contains('open')) return;
 
   const wrap = document.getElementById('canvas-wrap');
