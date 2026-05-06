@@ -33,6 +33,7 @@ function toggleTheme() {
   const btn = document.getElementById('theme-toggle');
   if (btn) btn.textContent = isLight ? '🌙' : '☀️';
   setLogoState(isLight);
+  if (typeof renderMochi === 'function') renderMochi();
 }
 
 // Apply saved theme on load
