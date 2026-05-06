@@ -46,10 +46,23 @@ html = html.replace(
   }
 );
 
-/* ── 4. collapse multiple consecutive blank lines ────── */
+/* ── 4. inline image references (mochi WebP) ──────────── */
+html = html.replace(
+  /(['"])img\/(mochi-(?:dark|light)\.webp)\1/g,
+  (_, q, file) => {
+    const imgPath = path.join(ROOT, 'img', file);
+    if (fs.existsSync(imgPath)) {
+      const b64 = fs.readFileSync(imgPath).toString('base64');
+      return `${q}data:image/webp;base64,${b64}${q}`;
+    }
+    return `${q}img/${file}${q}`;
+  }
+);
+
+/* ── 5. collapse multiple consecutive blank lines ────── */
 html = html.replace(/\n{3,}/g, '\n\n');
 
-/* ── 5. write output ─────────────────────────────────── */
+/* ── 6. write output ─────────────────────────────────── */
 fs.mkdirSync(DIST, { recursive: true });
 const out = path.join(DIST, 'Folio.html');
 fs.writeFileSync(out, html, 'utf8');

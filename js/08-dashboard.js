@@ -2,6 +2,10 @@
    DASHBOARD — Library + Visual Stats
 ═══════════════════════════════════ */
 
+/* Mochi mascot images (compressed WebP, base64) */
+const MOCHI_DARK  = 'img/mochi-dark.webp';
+const MOCHI_LIGHT = 'img/mochi-light.webp';
+
 let dashFilter   = 'reading';   // 'reading' | 'to-read' | 'finished' | 'all'
 let dashCategory = null;        // null = all categories
 
@@ -496,113 +500,13 @@ function renderMochi() {
   const avatar = document.getElementById('mochi-avatar');
   if (!avatar) return;
   const isLight = document.body.classList.contains('light');
-  const fur     = '#1a1714';
-  const furHL   = '#2a2520';
-  const inner   = '#3a3530';
-  const eye     = '#f5c542';
-  const eyeDark = '#e8a912';
-  const nose    = '#d4837a';
-  const glow    = isLight ? '#e8e0d4' : '#2a2622';
-  const sparkle = '#f5c542';
+  const src = isLight ? MOCHI_LIGHT : MOCHI_DARK;
+  avatar.innerHTML = `<img src="${src}" alt="Mochi" width="180" height="180" style="border-radius:12px;object-fit:contain">`;
 
-  avatar.innerHTML = `<svg width="160" height="180" viewBox="0 0 160 180" fill="none">
-    <!-- Background glow circle -->
-    <circle cx="80" cy="82" r="62" fill="${glow}" opacity="${isLight ? '0.6' : '0.4'}"/>
-
-    <!-- Sparkles -->
-    <g opacity="0.7">
-      <path d="M22 30 L24 26 L26 30 L24 34Z" fill="${sparkle}"/>
-      <path d="M135 45 L136.5 42 L138 45 L136.5 48Z" fill="${sparkle}"/>
-      <path d="M18 75 L19 73 L20 75 L19 77Z" fill="${sparkle}"/>
-      <path d="M142 80 L143 78 L144 80 L143 82Z" fill="${sparkle}" opacity="0.5"/>
-      <circle cx="30" cy="52" r="1.2" fill="${sparkle}" opacity="0.4"/>
-      <circle cx="132" cy="65" r="1" fill="${sparkle}" opacity="0.5"/>
-    </g>
-
-    <!-- Tail (behind body) -->
-    <path d="M118 105 Q132 85 126 65 Q122 55 118 58" stroke="${fur}" stroke-width="7" stroke-linecap="round" fill="none"/>
-    <path d="M118 105 Q132 85 126 65 Q122 55 118 58" stroke="${furHL}" stroke-width="4" stroke-linecap="round" fill="none" opacity="0.3"/>
-
-    <!-- Body -->
-    <ellipse cx="80" cy="115" rx="38" ry="28" fill="${fur}"/>
-    <ellipse cx="80" cy="112" rx="34" ry="24" fill="${furHL}" opacity="0.15"/>
-
-    <!-- Head -->
-    <circle cx="80" cy="72" r="30" fill="${fur}"/>
-
-    <!-- Left ear outer + inner -->
-    <polygon points="55,50 44,18 68,42" fill="${fur}"/>
-    <polygon points="57,47 48,24 65,41" fill="${inner}"/>
-    <!-- Right ear outer + inner -->
-    <polygon points="105,50 116,18 92,42" fill="${fur}"/>
-    <polygon points="103,47 112,24 95,41" fill="${inner}"/>
-
-    <!-- Eyes -->
-    <ellipse cx="68" cy="70" rx="7" ry="8" fill="${eye}"/>
-    <ellipse cx="92" cy="70" rx="7" ry="8" fill="${eye}"/>
-    <!-- Pupils -->
-    <ellipse cx="68" cy="71" rx="4" ry="5.5" fill="#111"/>
-    <ellipse cx="92" cy="71" rx="4" ry="5.5" fill="#111"/>
-    <!-- Eye rim -->
-    <ellipse cx="68" cy="70" rx="7" ry="8" fill="none" stroke="${eyeDark}" stroke-width="0.8" opacity="0.4"/>
-    <ellipse cx="92" cy="70" rx="7" ry="8" fill="none" stroke="${eyeDark}" stroke-width="0.8" opacity="0.4"/>
-    <!-- Highlights -->
-    <circle cx="71" cy="67" r="2.2" fill="#fff" opacity="0.9"/>
-    <circle cx="95" cy="67" r="2.2" fill="#fff" opacity="0.9"/>
-    <circle cx="65" cy="73" r="1" fill="#fff" opacity="0.4"/>
-    <circle cx="89" cy="73" r="1" fill="#fff" opacity="0.4"/>
-
-    <!-- Nose -->
-    <ellipse cx="80" cy="80" rx="3" ry="2.2" fill="${nose}"/>
-    <!-- Mouth -->
-    <path d="M76 83 Q80 87 84 83" stroke="${inner}" stroke-width="1.3" stroke-linecap="round" fill="none"/>
-
-    <!-- Whiskers -->
-    <line x1="54" y1="76" x2="66" y2="78" stroke="${inner}" stroke-width="0.8" opacity="0.4"/>
-    <line x1="53" y1="80" x2="66" y2="80" stroke="${inner}" stroke-width="0.8" opacity="0.4"/>
-    <line x1="94" y1="78" x2="106" y2="76" stroke="${inner}" stroke-width="0.8" opacity="0.4"/>
-    <line x1="94" y1="80" x2="107" y2="80" stroke="${inner}" stroke-width="0.8" opacity="0.4"/>
-
-    <!-- Collar -->
-    <path d="M58 95 Q80 102 102 95" stroke="#8b2a1a" stroke-width="3.5" stroke-linecap="round" fill="none"/>
-    <path d="M58 95 Q80 102 102 95" stroke="#a83225" stroke-width="2" stroke-linecap="round" fill="none"/>
-    <!-- Bell -->
-    <circle cx="80" cy="101" r="4" fill="#f5c542"/>
-    <circle cx="80" cy="101" r="4" fill="none" stroke="${eyeDark}" stroke-width="0.6"/>
-    <line x1="78" y1="101" x2="82" y2="101" stroke="#b8941a" stroke-width="0.8"/>
-    <circle cx="80" cy="103" r="0.8" fill="#b8941a"/>
-
-    <!-- Paws on book -->
-    <ellipse cx="62" cy="138" rx="10" ry="6" fill="${fur}"/>
-    <ellipse cx="98" cy="138" rx="10" ry="6" fill="${fur}"/>
-
-    <!-- Open book -->
-    <path d="M35 140 Q42 132 80 136 Q118 132 125 140 L125 155 Q118 148 80 152 Q42 148 35 155Z" fill="#4a1a12" stroke="#6b2a1e" stroke-width="0.8"/>
-    <!-- Book pages -->
-    <path d="M38 142 Q45 135 80 138 L80 153 Q45 150 38 155Z" fill="#f5ede0" opacity="0.85"/>
-    <path d="M122 142 Q115 135 80 138 L80 153 Q115 150 122 155Z" fill="#efe7da" opacity="0.85"/>
-    <!-- Book spine -->
-    <line x1="80" y1="137" x2="80" y2="153" stroke="#c0392b" stroke-width="1.5"/>
-    <!-- Bookmark ribbon -->
-    <path d="M80 137 L78 145 L80 143 L82 145 L80 137Z" fill="#c0392b" opacity="0.7"/>
-  </svg>`;
-
-  // Also render the small nudge face
+  // Small nudge face reuses same image
   const nudgeFace = document.getElementById('mochi-nudge-face');
   if (nudgeFace) {
-    nudgeFace.innerHTML = `<svg width="36" height="36" viewBox="30 35 100 65" fill="none">
-      <circle cx="80" cy="72" r="30" fill="${fur}"/>
-      <polygon points="55,50 44,18 68,42" fill="${fur}"/>
-      <polygon points="105,50 116,18 92,42" fill="${fur}"/>
-      <ellipse cx="68" cy="70" rx="7" ry="8" fill="${eye}"/>
-      <ellipse cx="92" cy="70" rx="7" ry="8" fill="${eye}"/>
-      <ellipse cx="68" cy="71" rx="4" ry="5.5" fill="#111"/>
-      <ellipse cx="92" cy="71" rx="4" ry="5.5" fill="#111"/>
-      <circle cx="71" cy="67" r="2.2" fill="#fff" opacity="0.9"/>
-      <circle cx="95" cy="67" r="2.2" fill="#fff" opacity="0.9"/>
-      <ellipse cx="80" cy="80" rx="3" ry="2.2" fill="${nose}"/>
-      <path d="M76 83 Q80 87 84 83" stroke="${inner}" stroke-width="1.3" stroke-linecap="round" fill="none"/>
-    </svg>`;
+    nudgeFace.innerHTML = `<img src="${src}" alt="Mochi" width="36" height="36" style="border-radius:6px;object-fit:contain">`;
   }
 }
 

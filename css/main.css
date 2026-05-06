@@ -1099,7 +1099,7 @@ body.light #epub-content { color: #1a1a1a !important; }
   text-align: center;
 }
 .mochi-avatar {
-  width: 160px; height: 180px;
+  width: 180px; height: 180px;
   display: flex; align-items: center; justify-content: center;
   margin-bottom: 4px;
 }

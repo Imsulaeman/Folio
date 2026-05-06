@@ -16,3 +16,9 @@ desktop.ini
 
 # Backup of original monolithic file
 Folio - Copy.html
+
+# Temp build artifacts
+img/_mochi_data.js
+img/*.b64.txt
+img/mochi-b64.json
+package-lock.json
