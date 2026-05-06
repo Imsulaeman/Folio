@@ -373,7 +373,10 @@ main { overflow: hidden; position: relative; grid-column: 2; }
   transform: translate(-50%, -50%);
   z-index: 50;
   color: var(--muted); text-align: center;
+  pointer-events: none;
 }
+.pdf-ph > * { pointer-events: auto; }
+#study-view:not(.active) .pdf-ph { display: none; }
 .pdf-ph .big { font-size: 52px; opacity:.2; }
 .pdf-ph h3 { font-size: 15px; font-weight:400; }
 
