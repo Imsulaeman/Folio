@@ -293,7 +293,28 @@ Color strategy: **Restrained dark.** Warm neutrals + single red accent, limited 
 - Storage health indicator: real-time badge showing quota usage (green/yellow/red)
 - Uses `navigator.storage.estimate()` for quota monitoring
 - Browser notifications for due flashcards
-- File System Access API support for data persistence
+- `navigator.storage.persist()` called on init — marks storage as browser-protected,
+  prevents automatic eviction of IndexedDB/localStorage under storage pressure
+- **File System Access API sync** (opt-in, Chrome/Edge only):
+  - `folio-data.json` — notes, flashcards, progress auto-saved to linked folder
+  - PDF/EPUB files saved as real files in the linked folder on upload
+  - On startup: folder is scanned, any PDF/EPUB not in IndexedDB is restored automatically
+  - Back-fills IndexedDB from folder files (recovery path if IDB was cleared)
+  - Works with local folders and cloud-synced folders (OneDrive, Dropbox, etc.)
+  - Cloud sync is handled by the OS cloud client — zero extra bandwidth from Folio
+
+#### Bandwidth profile
+| Event | Bandwidth |
+|---|---|
+| First load | ~3MB (CDN: PDF.js 1MB, pdf.worker 1MB, JSZip, sql.js, fonts) |
+| Subsequent loads | ~0 (browser cache; conditional requests are header-only) |
+| Folder sync (local) | 0 — pure filesystem I/O |
+| Folder sync (cloud) | Handled by OS cloud client, same as copying a file manually |
+| PDF upload | 0 — processed entirely in-browser, never hits a server |
+
+> **Low-end users:** after the first ~3MB load the app is fully functional with no further
+> network usage. A service worker (planned) would cache CDN scripts so even the first
+> load after a cache clear requires no network.
 
 ---
 
