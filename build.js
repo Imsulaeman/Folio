@@ -15,6 +15,7 @@ const path = require('path');
 
 const ROOT = __dirname;
 const DIST = path.join(ROOT, 'dist');
+const DOCS = path.join(ROOT, 'docs');
 
 /* ── helpers ─────────────────────────────────────────── */
 function read(rel) {
@@ -66,6 +67,10 @@ html = html.replace(/\n{3,}/g, '\n\n');
 fs.mkdirSync(DIST, { recursive: true });
 const out = path.join(DIST, 'Folio.html');
 fs.writeFileSync(out, html, 'utf8');
+
+// also write to docs/index.html for GitHub Pages
+fs.mkdirSync(DOCS, { recursive: true });
+fs.writeFileSync(path.join(DOCS, 'index.html'), html, 'utf8');
 
 const kb = Math.round(fs.statSync(out).size / 1024);
 console.log(`✓ dist/Folio.html  (${kb} KB)`);
