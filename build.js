@@ -85,6 +85,16 @@ if (fs.existsSync(LIB_SRC)) {
   }
 }
 
+// copy img/ assets (favicon, logos) to docs/img/
+const IMG_SRC = path.join(ROOT, 'img');
+const IMG_DST = path.join(DOCS, 'img');
+if (fs.existsSync(IMG_SRC)) {
+  fs.mkdirSync(IMG_DST, { recursive: true });
+  for (const f of fs.readdirSync(IMG_SRC)) {
+    fs.copyFileSync(path.join(IMG_SRC, f), path.join(IMG_DST, f));
+  }
+}
+
 const kb = Math.round(fs.statSync(out).size / 1024);
 console.log(`✓ dist/Folio.html  (${kb} KB)`);
 console.log('  Open it directly in Chrome/Edge — no server needed.');

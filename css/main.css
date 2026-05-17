@@ -1456,3 +1456,23 @@ body.light .notes-richtext code {
 body.light .rt-float-popup {
   box-shadow: 0 4px 16px rgba(0,0,0,.15);
 }
+
+/* ── Mobile wall ─────────────────────────────────────── */
+#mobile-wall {
+  display: none;
+  position: fixed; inset: 0; z-index: 9999;
+  background: var(--bg);
+  flex-direction: column; align-items: center; justify-content: center;
+  text-align: center; padding: 32px;
+}
+.mw-title {
+  font-family: var(--fd); font-size: 1.5rem; color: var(--text);
+  margin-bottom: 12px;
+}
+.mw-body {
+  font-family: var(--fb); font-size: .95rem; color: var(--muted);
+  line-height: 1.7; max-width: 280px;
+}
+@media (max-width: 768px) {
+  #mobile-wall { display: flex; }
+}
