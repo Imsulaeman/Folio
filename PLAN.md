@@ -17,10 +17,15 @@ Built from personal frustration: every existing tool either put your data in som
 ## Architecture
 
 ### Stack
-- Vanilla HTML + CSS + JavaScript. No framework, no build step.
-- `Folio.html` — all markup + 950 lines of inline CSS
-- `js/` — 20 modular scripts (01-state.js through 20-richtext.js)
-- `build.js` — concatenates everything into a single `index.html` for deployment
+- Vanilla HTML + CSS + JavaScript. No framework.
+- `index.html` — **source**: all HTML markup + `<link>` / `<script src>` references
+- `css/main.css` — **source**: all styles
+- `js/` — **source**: 20 modular scripts (01-state.js through 20-richtext.js)
+- `build.js` — inlines css/ + js/ into `dist/Folio.html` (the distributable)
+
+> **Workflow rule:** Edit `index.html`, `css/main.css`, and `js/*.js` only.
+> Run `node build.js` to regenerate `dist/Folio.html`. Never edit `dist/` or root `Folio.html` directly.
+> `Folio.html` in the root is a legacy standalone file — ignore it.
 
 ### External Libraries (CDN)
 - **PDF.js 3.11.174** — PDF rendering with text layer
@@ -35,9 +40,16 @@ Built from personal frustration: every existing tool either put your data in som
 
 ### File Structure
 ```
-Folio.html              <- HTML shell + all CSS + script tags
-index.html              <- built output (single file for deployment)
-build.js                <- concatenation script
+index.html              <- SOURCE: HTML + <link css> + <script src js/>
+css/
+  main.css              <- SOURCE: all styles
+js/
+  (see below)           <- SOURCE: modular JS
+build.js                <- build script: inlines css+js → dist/Folio.html
+dist/
+  Folio.html            <- BUILD OUTPUT: standalone file (edit via sources)
+Folio.html              <- LEGACY: ignore / do not edit
+extract.js              <- utility
 extract.js              <- utility
 Light-Mode-Cat.png      <- logo asset
 js/
@@ -303,7 +315,7 @@ Color strategy: **Restrained dark.** Warm neutrals + single red accent, limited 
 ### Favicon
 - Currently not set
 - Plan: match the cat logo / Mochi mascot
-- SVG favicon preferred (scalable, theme-aware)
+- SVG / Currently the best favicon preferred (scalable, theme-aware)
 
 ### Search
 - Full-text search across PDF content
@@ -392,7 +404,7 @@ Color strategy: **Restrained dark.** Warm neutrals + single red accent, limited 
 ```bash
 node build.js
 ```
-Concatenates `Folio.html` + all `js/*.js` into single `index.html`.
+Inlines `css/main.css` + all `js/*.js` into `dist/Folio.html`. Open `dist/Folio.html` directly in browser — no server needed.
 
 ### Deploy
 - GitHub Pages: push `index.html` to `main` branch
