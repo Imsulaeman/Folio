@@ -72,6 +72,16 @@ fs.writeFileSync(out, html, 'utf8');
 fs.mkdirSync(DOCS, { recursive: true });
 fs.writeFileSync(path.join(DOCS, 'index.html'), html, 'utf8');
 
+// copy lib/ assets (pdf.worker etc.) to docs/lib/ so they're same-origin
+const LIB_SRC = path.join(ROOT, 'lib');
+const LIB_DST = path.join(DOCS, 'lib');
+if (fs.existsSync(LIB_SRC)) {
+  fs.mkdirSync(LIB_DST, { recursive: true });
+  for (const f of fs.readdirSync(LIB_SRC)) {
+    fs.copyFileSync(path.join(LIB_SRC, f), path.join(LIB_DST, f));
+  }
+}
+
 const kb = Math.round(fs.statSync(out).size / 1024);
 console.log(`✓ dist/Folio.html  (${kb} KB)`);
 console.log('  Open it directly in Chrome/Edge — no server needed.');

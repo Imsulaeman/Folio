@@ -404,11 +404,27 @@ Color strategy: **Restrained dark.** Warm neutrals + single red accent, limited 
 ```bash
 node build.js
 ```
-Inlines `css/main.css` + all `js/*.js` into `dist/Folio.html`. Open `dist/Folio.html` directly in browser — no server needed.
+- Inlines `css/main.css` + all `js/*.js` into the HTML
+- Writes `dist/Folio.html` — local preview, open directly in browser
+- Writes `docs/index.html` — tracked deploy target for GitHub Pages
+- Copies `lib/` → `docs/lib/` (pdf.worker.min.js must be same-origin)
 
-### Deploy
-- GitHub Pages: push `index.html` to `main` branch
-- Repository: `imsulaeman/Folio`
+### Deploy workflow
+```bash
+# after any change to index.html, css/main.css, or js/*.js:
+node build.js
+git add docs/
+git commit -m "build: ..."
+git push
+```
+GitHub Pages serves from `docs/` on `main` branch.
+
+### Why docs/ and not dist/
+`dist/` is gitignored (local only). `docs/` is tracked and served by Pages.
+The PDF.js worker (`lib/pdf.worker.min.js`) must be same-origin — browsers
+block cross-origin Web Workers even with CDN CORS headers.
+
+- Repository: `Imsulaeman/Folio`
 - Live at: https://imsulaeman.github.io/Folio
 
 ---
