@@ -72,6 +72,9 @@ fs.writeFileSync(out, html, 'utf8');
 fs.mkdirSync(DOCS, { recursive: true });
 fs.writeFileSync(path.join(DOCS, 'index.html'), html, 'utf8');
 
+// disable Jekyll so GitHub Pages serves files as-is
+fs.writeFileSync(path.join(DOCS, '.nojekyll'), '');
+
 // copy lib/ assets (pdf.worker etc.) to docs/lib/ so they're same-origin
 const LIB_SRC = path.join(ROOT, 'lib');
 const LIB_DST = path.join(DOCS, 'lib');
