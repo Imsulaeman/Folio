@@ -84,6 +84,41 @@ async function _readFile() {
   }
 }
 
+/* ── PDF / EPUB folder save & restore ── */
+async function savePdfToFolder(name, file) {
+  if (!_dirHandle) return;
+  try {
+    if ((await _dirHandle.queryPermission({ mode: 'readwrite' })) !== 'granted') {
+      if ((await _dirHandle.requestPermission({ mode: 'readwrite' })) !== 'granted') return;
+    }
+    const ext = file.name.toLowerCase().endsWith('.epub') ? '.epub' : '.pdf';
+    const fh = await _dirHandle.getFileHandle(name + ext, { create: true });
+    const wr = await fh.createWritable();
+    await wr.write(file);
+    await wr.close();
+  } catch(err) {
+    console.warn('[Folio] Could not save file to folder:', err.message);
+  }
+}
+
+async function getPdfsFromFolder() {
+  if (!_dirHandle) return [];
+  try {
+    if ((await _dirHandle.queryPermission({ mode: 'read' })) !== 'granted') return [];
+    const files = [];
+    for await (const [, handle] of _dirHandle.entries()) {
+      if (handle.kind !== 'file') continue;
+      const n = handle.name.toLowerCase();
+      if (!n.endsWith('.pdf') && !n.endsWith('.epub')) continue;
+      try { files.push(await handle.getFile()); } catch {}
+    }
+    return files;
+  } catch(err) {
+    console.warn('[Folio] Could not scan folder for files:', err.message);
+    return [];
+  }
+}
+
 /* ── Public: link / unlink folder ── */
 async function linkFolder() {
   if (!window.showDirectoryPicker) {

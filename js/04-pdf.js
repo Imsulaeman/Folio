@@ -22,6 +22,7 @@ async function addLesson(file, saveToIDB=false) {
   }
 
   if (saveToIDB && IDB) await savePdfToIDB(name, file);
+  if (saveToIDB && isFolderLinked()) savePdfToFolder(name, file);
   renderSidebar(); renderNotesSidebar();
   const idx = S.lessons.findIndex(l => l.name === name);
   selectLesson(idx >= 0 ? idx : S.lessons.length - 1);

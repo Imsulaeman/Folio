@@ -37,6 +37,9 @@ function speakSelection() {
   document.getElementById('sel-popup').style.display = 'none';
 }
 genWave();
+// Request persistent storage — prevents browser from evicting IndexedDB/localStorage
+navigator.storage?.persist?.();
+
 // Init file sync before restoring session (loads newer data from file if available)
 initFileSync().then(() => {
   restoreSession();
@@ -71,6 +74,18 @@ setInterval(updateDueBadge, 60000);
 openIDB().then(async () => {
   // Restore all PDFs from IDB but DON'T select a lesson yet
   await restorePDFsFromIDB(/* skipSelect */ true);
+
+  // Also restore any PDFs saved in the linked folder (survives IDB eviction)
+  const folderFiles = await getPdfsFromFolder();
+  for (const file of folderFiles) {
+    const name = file.name.replace(/\.(pdf|epub)$/i, '');
+    if (!S.lessons.find(l => l.name === name)) {
+      const isEpub = file.name.toLowerCase().endsWith('.epub');
+      const url = URL.createObjectURL(file);
+      S.lessons.push({ name, url, type: isEpub ? 'epub' : 'pdf' });
+      if (IDB) savePdfToIDB(name, file); // back-fill IDB
+    }
+  }
 
   // Apply saved order BEFORE selecting any lesson
   if (S._pendingOrder?.length) {

@@ -2263,6 +2263,41 @@ async function _readFile() {
   }
 }
 
+/* ── PDF / EPUB folder save & restore ── */
+async function savePdfToFolder(name, file) {
+  if (!_dirHandle) return;
+  try {
+    if ((await _dirHandle.queryPermission({ mode: 'readwrite' })) !== 'granted') {
+      if ((await _dirHandle.requestPermission({ mode: 'readwrite' })) !== 'granted') return;
+    }
+    const ext = file.name.toLowerCase().endsWith('.epub') ? '.epub' : '.pdf';
+    const fh = await _dirHandle.getFileHandle(name + ext, { create: true });
+    const wr = await fh.createWritable();
+    await wr.write(file);
+    await wr.close();
+  } catch(err) {
+    console.warn('[Folio] Could not save file to folder:', err.message);
+  }
+}
+
+async function getPdfsFromFolder() {
+  if (!_dirHandle) return [];
+  try {
+    if ((await _dirHandle.queryPermission({ mode: 'read' })) !== 'granted') return [];
+    const files = [];
+    for await (const [, handle] of _dirHandle.entries()) {
+      if (handle.kind !== 'file') continue;
+      const n = handle.name.toLowerCase();
+      if (!n.endsWith('.pdf') && !n.endsWith('.epub')) continue;
+      try { files.push(await handle.getFile()); } catch {}
+    }
+    return files;
+  } catch(err) {
+    console.warn('[Folio] Could not scan folder for files:', err.message);
+    return [];
+  }
+}
+
 /* ── Public: link / unlink folder ── */
 async function linkFolder() {
   if (!window.showDirectoryPicker) {
@@ -2579,6 +2614,7 @@ async function addLesson(file, saveToIDB=false) {
   }
 
   if (saveToIDB && IDB) await savePdfToIDB(name, file);
+  if (saveToIDB && isFolderLinked()) savePdfToFolder(name, file);
   renderSidebar(); renderNotesSidebar();
   const idx = S.lessons.findIndex(l => l.name === name);
   selectLesson(idx >= 0 ? idx : S.lessons.length - 1);
@@ -6056,6 +6092,9 @@ function speakSelection() {
   document.getElementById('sel-popup').style.display = 'none';
 }
 genWave();
+// Request persistent storage — prevents browser from evicting IndexedDB/localStorage
+navigator.storage?.persist?.();
+
 // Init file sync before restoring session (loads newer data from file if available)
 initFileSync().then(() => {
   restoreSession();
@@ -6090,6 +6129,18 @@ setInterval(updateDueBadge, 60000);
 openIDB().then(async () => {
   // Restore all PDFs from IDB but DON'T select a lesson yet
   await restorePDFsFromIDB(/* skipSelect */ true);
+
+  // Also restore any PDFs saved in the linked folder (survives IDB eviction)
+  const folderFiles = await getPdfsFromFolder();
+  for (const file of folderFiles) {
+    const name = file.name.replace(/\.(pdf|epub)$/i, '');
+    if (!S.lessons.find(l => l.name === name)) {
+      const isEpub = file.name.toLowerCase().endsWith('.epub');
+      const url = URL.createObjectURL(file);
+      S.lessons.push({ name, url, type: isEpub ? 'epub' : 'pdf' });
+      if (IDB) savePdfToIDB(name, file); // back-fill IDB
+    }
+  }
 
   // Apply saved order BEFORE selecting any lesson
   if (S._pendingOrder?.length) {
