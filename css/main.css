@@ -1457,6 +1457,12 @@ body.light .rt-float-popup {
   box-shadow: 0 4px 16px rgba(0,0,0,.15);
 }
 
+/* ── Sticker empty states ───────────────────────────── */
+.sticker-empty {
+  width: 90px; height: 90px; object-fit: contain;
+  display: block; margin: 0 auto 10px;
+}
+
 /* ── Mobile wall ─────────────────────────────────────── */
 #mobile-wall {
   display: none;

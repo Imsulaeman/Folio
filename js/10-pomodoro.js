@@ -205,7 +205,7 @@ function pomoSplash() {
       z-index:1002;font-family:var(--fd);font-size:clamp(48px,10vw,96px);color:#fff;
       text-shadow:0 4px 30px rgba(0,0,0,.8);pointer-events:none;text-align:center;
       transition:transform .35s cubic-bezier(.17,.67,.3,1.4), opacity .3s;opacity:0;line-height:1.2;`;
-    msg.innerHTML = '🍅<br>Session Done!';
+    msg.innerHTML = '<img src="img/stickers/sprite-3-1.png" style="width:90px;height:90px;object-fit:contain;display:block;margin:0 auto 6px" alt=""><br>Session Done!';
     document.body.appendChild(msg);
     requestAnimationFrame(() => requestAnimationFrame(() => {
       msg.style.transform = 'translate(-50%,-50%) scale(1)';
