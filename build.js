@@ -85,15 +85,19 @@ if (fs.existsSync(LIB_SRC)) {
   }
 }
 
-// copy img/ assets (favicon, logos) to docs/img/
-const IMG_SRC = path.join(ROOT, 'img');
-const IMG_DST = path.join(DOCS, 'img');
-if (fs.existsSync(IMG_SRC)) {
-  fs.mkdirSync(IMG_DST, { recursive: true });
-  for (const f of fs.readdirSync(IMG_SRC)) {
-    fs.copyFileSync(path.join(IMG_SRC, f), path.join(IMG_DST, f));
+// copy img/ assets (favicon, logos, stickers) to docs/img/ recursively
+function copyDir(src, dst) {
+  fs.mkdirSync(dst, { recursive: true });
+  for (const entry of fs.readdirSync(src, { withFileTypes: true })) {
+    const s = path.join(src, entry.name);
+    const d = path.join(dst, entry.name);
+    if (entry.isDirectory()) copyDir(s, d);
+    else fs.copyFileSync(s, d);
   }
 }
+const IMG_SRC = path.join(ROOT, 'img');
+const IMG_DST = path.join(DOCS, 'img');
+if (fs.existsSync(IMG_SRC)) copyDir(IMG_SRC, IMG_DST);
 
 const kb = Math.round(fs.statSync(out).size / 1024);
 console.log(`✓ dist/Folio.html  (${kb} KB)`);
