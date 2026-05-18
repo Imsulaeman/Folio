@@ -47,18 +47,17 @@ html = html.replace(
   }
 );
 
-/* ── 4. inline image references (mochi WebP) ──────────── */
-html = html.replace(
-  /(['"])img\/(mochi-(?:dark|light)\.webp)\1/g,
-  (_, q, file) => {
-    const imgPath = path.join(ROOT, 'img', file);
-    if (fs.existsSync(imgPath)) {
-      const b64 = fs.readFileSync(imgPath).toString('base64');
-      return `${q}data:image/webp;base64,${b64}${q}`;
-    }
-    return `${q}img/${file}${q}`;
-  }
-);
+/* ── 4. inline all local img/ references as base64 ───── */
+const MIME = { png:'image/png', webp:'image/webp', jpg:'image/jpeg', jpeg:'image/jpeg', gif:'image/gif', svg:'image/svg+xml' };
+html = html.replace(/(['"])(img\/[^'"]+)\1/g, (match, q, rel) => {
+  const imgPath = path.join(ROOT, rel);
+  if (!fs.existsSync(imgPath)) return match;
+  const ext  = path.extname(rel).slice(1).toLowerCase();
+  const mime = MIME[ext];
+  if (!mime) return match;
+  const b64  = fs.readFileSync(imgPath).toString('base64');
+  return `${q}data:${mime};base64,${b64}${q}`;
+});
 
 /* ── 5. collapse multiple consecutive blank lines ────── */
 html = html.replace(/\n{3,}/g, '\n\n');

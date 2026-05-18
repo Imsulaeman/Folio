@@ -4,25 +4,9 @@
 function setLogoState(isLight) {
   const awake = document.getElementById('logo-cat-awake');
   const sleep = document.getElementById('logo-cat-sleep');
-  const glow  = document.getElementById('logo-glow');
-  const rays  = document.getElementById('logo-rays');
   if (!awake || !sleep) return;
-
-  if (isLight) {
-    // Light mode: sleeping cat, sun with rays
-    awake.style.opacity = '0';
-    sleep.style.opacity = '1';
-    glow.setAttribute('opacity', '0.35');
-    glow.setAttribute('r', '12');
-    rays.style.opacity = '1';
-  } else {
-    // Dark mode: awake cat, moon glow
-    awake.style.opacity = '1';
-    sleep.style.opacity = '0';
-    glow.setAttribute('opacity', '0.25');
-    glow.setAttribute('r', '14');
-    rays.style.opacity = '0';
-  }
+  awake.style.display = isLight ? 'none' : '';
+  sleep.style.display = isLight ? ''     : 'none';
 }
 
 function toggleTheme() {
