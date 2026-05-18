@@ -1465,6 +1465,9 @@ body.light .rt-float-popup {
   flex-direction: column; align-items: center; justify-content: center;
   text-align: center; padding: 32px;
 }
+.mw-cat {
+  width: 140px; height: 140px; object-fit: contain; margin-bottom: 20px;
+}
 .mw-title {
   font-family: var(--fd); font-size: 1.5rem; color: var(--text);
   margin-bottom: 12px;
