@@ -2,7 +2,7 @@
 
 A personal study companion built for reading, note-taking, and spaced-repetition flashcard review — entirely offline, no account required, your data never leaves your device.
 
-**Live:** https://imsulaeman.github.io/Folio
+**Live:** https://imsulaeman.me/Folio
 
 ---
 
