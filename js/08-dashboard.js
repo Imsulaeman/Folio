@@ -261,10 +261,12 @@ function renderDashBooks() {
   }
 
   el.innerHTML = books.map(name => {
-    const pg    = d.progress?.[name] || 0;
     const lesson = S.lessons.find(l => l.name === name);
     const hidden = S.hiddenLessons.find(l => l.name === name);
-    const total  = lesson?.pages || 0;
+    const isEpub = (lesson?.type === 'epub') || (hidden?.type === 'epub');
+    const epubCh = isEpub ? d.epubCfi?.[name] : undefined;
+    const pg     = isEpub ? (epubCh != null ? epubCh + 1 : 0) : (d.progress?.[name] || 0);
+    const total  = isEpub ? 0 : (lesson?.pages || 0);
     const pct    = total > 0 ? Math.min(100, Math.round((pg / total) * 100)) : 0;
     const hn     = hasNote(name);
     const status = getBookStatus(name);
@@ -274,12 +276,15 @@ function renderDashBooks() {
     const statusLabel = status === 'reading' ? 'READING' : status === 'to-read' ? 'TO READ' : 'FINISHED';
     const idx = S.lessons.findIndex(l => l.name === name);
     const esc = name.replace(/'/g,"\\'");
+    const progressMeta = isEpub
+      ? (epubCh != null ? `Ch. ${epubCh + 1}` : 'Not started')
+      : (pg ? `p. ${pg}${total > 0 ? ' / ' + total : ''}` : 'Not started');
 
     return `<div class="dbook-card${isHidden ? ' hidden-card' : ''}">
       <div class="dbook-status-tag ${status}">${statusLabel}</div>
       <div class="dbook-name">${formatLessonName(name)}</div>
       <div class="dbook-meta">
-        ${pg ? `p. ${pg}${total > 0 ? ' / ' + total : ''}` : 'Not started'}
+        ${progressMeta}
         ${hn ? ' · 📝 Notes' : ''}
         ${cat ? ` · 📁 ${cat}` : ''}
         ${isHidden ? ' · 👁 Hidden' : ''}
