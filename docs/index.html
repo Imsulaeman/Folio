@@ -1281,6 +1281,22 @@ body.light #epub-content { color: #1a1a1a !important; }
   color: var(--muted); font-size: 12px; line-height: 1.7;
   border: 1px dashed var(--border); border-radius: 10px;
 }
+.dash-first-timer {
+  grid-column: 1 / -1; text-align: center; padding: 52px 20px;
+  border: 1px dashed var(--border); border-radius: 10px;
+  display: flex; flex-direction: column; align-items: center; gap: 8px;
+}
+.dft-icon { font-size: 32px; line-height: 1; margin-bottom: 4px; }
+.dft-title { font-family: var(--fd); font-size: 17px; color: var(--text); }
+.dft-sub { font-size: 12px; color: var(--muted); margin-bottom: 8px; }
+.dft-upload-btn {
+  display: inline-block; cursor: pointer;
+  padding: 8px 20px; border-radius: 6px;
+  background: var(--accent); color: #fff;
+  font-family: var(--fm); font-size: 12px; letter-spacing: .04em;
+  transition: background .15s;
+}
+.dft-upload-btn:hover { background: var(--acc2); }
 
 /* ── Right dashboard panel (companion + stats) ── */
 .dash-right-panel {
@@ -2603,7 +2619,7 @@ async function addLesson(file, saveToIDB=false) {
   if (saveToIDB && isFolderLinked()) savePdfToFolder(name, file);
   renderSidebar(); renderNotesSidebar();
   const idx = S.lessons.findIndex(l => l.name === name);
-  selectLesson(idx >= 0 ? idx : S.lessons.length - 1);
+  goToLesson(idx >= 0 ? idx : S.lessons.length - 1);
   document.getElementById('restore-banner')?.remove();
 }
 
@@ -3195,6 +3211,25 @@ function tickWave() {
   if(!audioEl.paused&&++wt%3===0)
     document.querySelectorAll('.wb').forEach(b=>{b.style.height=(Math.random()*20+4)+'px';});
 }
+
+/* ── Default lo-fi tracks (Pages only — relative URLs) ── */
+(function initDefaultTracks() {
+  if (S.audioFolders.length) return;
+  S.audioFolders.push({
+    name: 'Lo-fi · Free',
+    open: true,
+    tracks: [
+      { name: 'Good Night Lofi',  url: 'lofi-free-copyright/fassounds-good-night-lofi-cozy-chill-music-160166 (1).mp3' },
+      { name: 'Lofi Study (Calm)', url: 'lofi-free-copyright/fassounds-lofi-study-calm-peaceful-chill-hop-112191.mp3' },
+    ]
+  });
+  S.activeFolder = 0; S.activeTrack = 0;
+  document.getElementById('audio-ph').style.display = 'none';
+  document.getElementById('audio-player').style.display = 'flex';
+  genWave(); renderFolders();
+  audioEl.src = S.audioFolders[0].tracks[0].url;
+  document.getElementById('audio-fname').textContent = S.audioFolders[0].tracks[0].name;
+})();
 </script>
 <script>
 /* ═══════════════════════════════════
@@ -4650,11 +4685,20 @@ function renderDashBooks() {
   }
 
   if (!books.length) {
-    const msg = dashFilter === 'reading' ? 'No books currently being read. Upload a PDF in the sidebar!'
-              : dashFilter === 'to-read' ? 'Nothing in your reading list yet.'
-              : dashFilter === 'finished' ? 'No finished books yet — keep reading!'
-              : 'No books found.';
-    el.innerHTML = `<div class="dash-empty">${msg}</div>`;
+    if (!allBooks.length) {
+      el.innerHTML = `<div class="dash-first-timer">
+        <div class="dft-icon">📖</div>
+        <div class="dft-title">No books yet</div>
+        <div class="dft-sub">Upload a PDF or EPUB to get started</div>
+        <label for="pdf-upload" class="dft-upload-btn">Upload PDF / EPUB</label>
+      </div>`;
+    } else {
+      const msg = dashFilter === 'reading' ? 'No books currently being read.'
+                : dashFilter === 'to-read' ? 'Nothing in your reading list yet.'
+                : dashFilter === 'finished' ? 'No finished books yet — keep reading!'
+                : 'No books found.';
+      el.innerHTML = `<div class="dash-empty">${msg}</div>`;
+    }
     return;
   }
 
@@ -6427,9 +6471,12 @@ function convertRomaji(input, mode, finalize) {
       continue;
     }
 
-    // Double consonant → っ/ッ (not vowels, not 'n' which has its own rule)
+    // Double consonant → っ/ッ (ASCII consonants only, not vowels, not 'n')
+    // Must check isAscii first — already-converted kana chars like 'い' are not
+    // in 'aeiou' but can repeat (e.g. 'いい'), and would falsely trigger this rule.
+    const isAscii = ch >= 'a' && ch <= 'z';
     const isVowel = 'aeiou'.includes(ch);
-    if (!isVowel && ch !== 'n' && i + 1 < s.length && s[i + 1] === ch) {
+    if (isAscii && !isVowel && ch !== 'n' && i + 1 < s.length && s[i + 1] === ch) {
       result += mode === 'katakana' ? 'ッ' : 'っ';
       i++;   // consume one of the pair; next iteration handles the second
       continue;

@@ -98,6 +98,10 @@ const IMG_SRC = path.join(ROOT, 'img');
 const IMG_DST = path.join(DOCS, 'img');
 if (fs.existsSync(IMG_SRC)) copyDir(IMG_SRC, IMG_DST);
 
+const LOFI_SRC = path.join(ROOT, 'lofi-free-copyright');
+const LOFI_DST = path.join(DOCS, 'lofi-free-copyright');
+if (fs.existsSync(LOFI_SRC)) copyDir(LOFI_SRC, LOFI_DST);
+
 const kb = Math.round(fs.statSync(out).size / 1024);
 console.log(`✓ dist/Folio.html  (${kb} KB)`);
 console.log('  Open it directly in Chrome/Edge — no server needed.');

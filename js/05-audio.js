@@ -139,3 +139,22 @@ function tickWave() {
   if(!audioEl.paused&&++wt%3===0)
     document.querySelectorAll('.wb').forEach(b=>{b.style.height=(Math.random()*20+4)+'px';});
 }
+
+/* ── Default lo-fi tracks (Pages only — relative URLs) ── */
+(function initDefaultTracks() {
+  if (S.audioFolders.length) return;
+  S.audioFolders.push({
+    name: 'Lo-fi · Free',
+    open: true,
+    tracks: [
+      { name: 'Good Night Lofi',  url: 'lofi-free-copyright/fassounds-good-night-lofi-cozy-chill-music-160166 (1).mp3' },
+      { name: 'Lofi Study (Calm)', url: 'lofi-free-copyright/fassounds-lofi-study-calm-peaceful-chill-hop-112191.mp3' },
+    ]
+  });
+  S.activeFolder = 0; S.activeTrack = 0;
+  document.getElementById('audio-ph').style.display = 'none';
+  document.getElementById('audio-player').style.display = 'flex';
+  genWave(); renderFolders();
+  audioEl.src = S.audioFolders[0].tracks[0].url;
+  document.getElementById('audio-fname').textContent = S.audioFolders[0].tracks[0].name;
+})();

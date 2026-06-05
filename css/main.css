@@ -1269,6 +1269,22 @@ body.light #epub-content { color: #1a1a1a !important; }
   color: var(--muted); font-size: 12px; line-height: 1.7;
   border: 1px dashed var(--border); border-radius: 10px;
 }
+.dash-first-timer {
+  grid-column: 1 / -1; text-align: center; padding: 52px 20px;
+  border: 1px dashed var(--border); border-radius: 10px;
+  display: flex; flex-direction: column; align-items: center; gap: 8px;
+}
+.dft-icon { font-size: 32px; line-height: 1; margin-bottom: 4px; }
+.dft-title { font-family: var(--fd); font-size: 17px; color: var(--text); }
+.dft-sub { font-size: 12px; color: var(--muted); margin-bottom: 8px; }
+.dft-upload-btn {
+  display: inline-block; cursor: pointer;
+  padding: 8px 20px; border-radius: 6px;
+  background: var(--accent); color: #fff;
+  font-family: var(--fm); font-size: 12px; letter-spacing: .04em;
+  transition: background .15s;
+}
+.dft-upload-btn:hover { background: var(--acc2); }
 
 /* ── Right dashboard panel (companion + stats) ── */
 .dash-right-panel {

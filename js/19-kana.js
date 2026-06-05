@@ -103,9 +103,12 @@ function convertRomaji(input, mode, finalize) {
       continue;
     }
 
-    // Double consonant → っ/ッ (not vowels, not 'n' which has its own rule)
+    // Double consonant → っ/ッ (ASCII consonants only, not vowels, not 'n')
+    // Must check isAscii first — already-converted kana chars like 'い' are not
+    // in 'aeiou' but can repeat (e.g. 'いい'), and would falsely trigger this rule.
+    const isAscii = ch >= 'a' && ch <= 'z';
     const isVowel = 'aeiou'.includes(ch);
-    if (!isVowel && ch !== 'n' && i + 1 < s.length && s[i + 1] === ch) {
+    if (isAscii && !isVowel && ch !== 'n' && i + 1 < s.length && s[i + 1] === ch) {
       result += mode === 'katakana' ? 'ッ' : 'っ';
       i++;   // consume one of the pair; next iteration handles the second
       continue;

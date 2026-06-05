@@ -243,11 +243,20 @@ function renderDashBooks() {
   }
 
   if (!books.length) {
-    const msg = dashFilter === 'reading' ? 'No books currently being read. Upload a PDF in the sidebar!'
-              : dashFilter === 'to-read' ? 'Nothing in your reading list yet.'
-              : dashFilter === 'finished' ? 'No finished books yet — keep reading!'
-              : 'No books found.';
-    el.innerHTML = `<div class="dash-empty">${msg}</div>`;
+    if (!allBooks.length) {
+      el.innerHTML = `<div class="dash-first-timer">
+        <div class="dft-icon">📖</div>
+        <div class="dft-title">No books yet</div>
+        <div class="dft-sub">Upload a PDF or EPUB to get started</div>
+        <label for="pdf-upload" class="dft-upload-btn">Upload PDF / EPUB</label>
+      </div>`;
+    } else {
+      const msg = dashFilter === 'reading' ? 'No books currently being read.'
+                : dashFilter === 'to-read' ? 'Nothing in your reading list yet.'
+                : dashFilter === 'finished' ? 'No finished books yet — keep reading!'
+                : 'No books found.';
+      el.innerHTML = `<div class="dash-empty">${msg}</div>`;
+    }
     return;
   }
 

@@ -25,7 +25,7 @@ async function addLesson(file, saveToIDB=false) {
   if (saveToIDB && isFolderLinked()) savePdfToFolder(name, file);
   renderSidebar(); renderNotesSidebar();
   const idx = S.lessons.findIndex(l => l.name === name);
-  selectLesson(idx >= 0 ? idx : S.lessons.length - 1);
+  goToLesson(idx >= 0 ? idx : S.lessons.length - 1);
   document.getElementById('restore-banner')?.remove();
 }
 
