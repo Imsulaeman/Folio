@@ -348,6 +348,8 @@ function showSrsCard() {
 function normalize(s) {
   if (!s) return '';
   let r = s.trim();
+  // Strip Japanese and ASCII punctuation so ありがとう。== ありがとう
+  r = r.replace(/[。、！？…・〜～「」『』【】()（）\[\].,!?;:'"]/g, '');
   // Convert katakana → hiragana so コーヒー and こーひー are treated equal
   r = r.replace(/[ァ-ヶ]/g, m => String.fromCharCode(m.charCodeAt(0) - 0x60));
   return r.toLowerCase().replace(/[　\s]+/g, ' ').replace(/[ー－]/g, 'ー');
