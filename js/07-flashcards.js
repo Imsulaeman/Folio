@@ -616,6 +616,14 @@ function renderDeckManager() {
         ${src === 'manual' ? '✏️ Manual' : src === 'imported' ? '📥 Imported' : '📦 ' + src}
       </span>
       <span style="font-size:11px;color:var(--muted);font-family:var(--fm)">${cnt} card${cnt>1?'s':''}</span>
+      <button onclick="renameDeck('${src.replace(/'/g,"\\'")}')"
+        style="background:none;border:1px solid var(--border);color:var(--muted);
+               padding:2px 8px;border-radius:4px;cursor:pointer;font-size:11px;
+               font-family:var(--fb);transition:all .15s"
+        onmouseover="this.style.borderColor='var(--text)';this.style.color='var(--text)'"
+        onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--muted)'">
+        ✏️ Rename
+      </button>
       <button onclick="deleteDeck('${src.replace(/'/g,"\\'")}')"
         style="background:none;border:1px solid var(--border);color:var(--muted);
                padding:2px 8px;border-radius:4px;cursor:pointer;font-size:11px;
@@ -625,6 +633,18 @@ function renderDeckManager() {
         🗑 Delete
       </button>
     </div>`).join('');
+}
+
+function renameDeck(source) {
+  const current = source === 'manual' ? 'Manual' : source;
+  const newName = prompt(`Rename deck "${current}" to:`, current);
+  if (!newName || !newName.trim() || newName.trim() === source) return;
+  const trimmed = newName.trim();
+  const conflict = S.cards.some(c => (c.source || 'manual') === trimmed && (c.source || 'manual') !== source);
+  if (conflict) { showToast('A deck with that name already exists'); return; }
+  S.cards.forEach(c => { if ((c.source || 'manual') === source) c.source = trimmed; });
+  persist(); renderDeckManager();
+  showToast(`Renamed to "${trimmed}"`);
 }
 
 function deleteDeck(source) {
