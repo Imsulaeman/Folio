@@ -481,10 +481,7 @@ function renderPagesBar(d) {
 /* ── Navigation helpers ── */
 function goToLesson(i) {
   selectLesson(i);
-  document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
-  document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
-  document.getElementById('study-view').classList.add('active');
-  document.getElementById('study-tab-btn').classList.add('active');
+  switchTab('study', document.getElementById('study-tab-btn'));
 }
 
 function dashCtaRead() {
