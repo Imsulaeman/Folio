@@ -6484,6 +6484,14 @@ function convertRomaji(input, mode, finalize) {
       continue;
     }
 
+    // "nn" + vowel/y → ん + keep second n to form its own syllable (e.g. "nna"→"んな")
+    // Without this, greedy "nn"→"ん" eats both n's leaving a bare vowel ("そんあ" not "そんな")
+    if (ch === 'n' && i + 2 < s.length && s[i + 1] === 'n' && ('aeiou'.includes(s[i + 2]) || s[i + 2] === 'y')) {
+      result += mode === 'katakana' ? 'ン' : 'ん';
+      i++;
+      continue;
+    }
+
     // Longest-match lookup (4 → 3 → 2 → 1)
     let matched = false;
     for (let len = Math.min(4, s.length - i); len >= 1; len--) {
