@@ -359,6 +359,20 @@ function fuzzyMatch(input, target) {
   return 'wrong';
 }
 
+// Splits target on : ; / and returns best match across all parts
+// so "Excuse me" matches "I'm sorry: Excuse Me"
+function fuzzyMatchMulti(input, target) {
+  const parts = target.split(/[:;\/]/).map(p => p.trim()).filter(Boolean);
+  const ranks = { exact: 2, close: 1, wrong: 0 };
+  let best = 'wrong';
+  for (const part of parts) {
+    const m = fuzzyMatch(input, part);
+    if (ranks[m] > ranks[best]) best = m;
+    if (best === 'exact') break;
+  }
+  return best;
+}
+
 function startWrongCountdown(card) {
   // Called after wrong answer — 10s countdown, D/→ skips, A/← goes back
   waitingForNext = true;
@@ -423,7 +437,7 @@ function submitTypeAnswer() {
     }, typeRdGrade === 'good' ? 500 : 1000);
 
   } else {
-    const match = fuzzyMatch(val, c.mn);
+    const match = fuzzyMatchMulti(val, c.mn);
     let typeMnGrade;
     if (match === 'exact') {
       typeMnGrade = 'good';
