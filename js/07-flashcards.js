@@ -213,7 +213,7 @@ function toggleReviewAll() {
 let srsFailedFirstAttempt = new Set(); // card references that were wrong on first try
 let srsCardFirstSeen = new Set();      // card references seen for first time this session
 
-const SRS_SESSION_CAP = 20;
+const NEW_CARDS_PER_DAY = 20;
 
 function startSrsSession() {
   S.cards.forEach(srsInit);
@@ -221,11 +221,8 @@ function startSrsSession() {
     srsQueue = [...S.cards];
   } else {
     const due = getDueCards();
-    const remaining = Math.max(0, SRS_SESSION_CAP - due.length);
-    const newCards = S.cards.filter(c => c.reps === 0 && !due.includes(c)).slice(0, remaining);
+    const newCards = S.cards.filter(c => c.reps === 0 && !due.includes(c)).slice(0, NEW_CARDS_PER_DAY);
     srsQueue = [...due, ...newCards];
-    // Cap total session to SRS_SESSION_CAP
-    if (srsQueue.length > SRS_SESSION_CAP) srsQueue = srsQueue.slice(0, SRS_SESSION_CAP);
   }
   // Shuffle
   for (let i = srsQueue.length - 1; i > 0; i--) {
